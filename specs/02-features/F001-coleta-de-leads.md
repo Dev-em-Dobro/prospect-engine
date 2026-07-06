@@ -1,0 +1,119 @@
+# F001 — Coleta de Leads via Google Places
+
+## Status
+Proposta — 2026-05-27
+
+## Objetivo
+Permitir que o operador colete **Leads** novos a partir de uma busca
+textual no Google Places, persistindo cada estabelecimento retornado
+como um Lead com `status = novo`, deduplicado por `place_id`.
+
+É o ponto de entrada do funil: sem F001 não há Lead pra diagnosticar,
+priorizar ou abordar.
+
+## Input (UI)
+Form simples com dois campos:
+
+| Campo         | Tipo   | Validação                          | Exemplo            |
+|---------------|--------|------------------------------------|--------------------|
+| `termo`       | string | obrigatório, 2–80 chars            | `barbearia`        |
+| `localizacao` | string | obrigatório, 2–80 chars            | `Curitiba PR`      |
+
+A busca enviada à Places API é a concatenação: `"{termo} em {localizacao}"`.
+
+Não há `raio` nesta versão — o Places ajusta o viés geográfico
+automaticamente a partir do texto.
+
+## Saída (UI)
+Após a operação, exibir contagem:
+
+> *"Busca concluída: N Leads novos criados, M ignorados (já existiam)."*
+
+E redirecionar para `/leads` (lista de todos os Leads, ordenada por
+`created_at desc`).
+
+## Fluxo
+1. Operador acessa `/leads`, preenche o form, clica em **Coletar**.
+2. Server Action `coletarLeads({ termo, localizacao })`:
+   1. Valida input com Zod.
+   2. Chama `src/lib/places/textSearch(query)` → lista de `PlacesResult`.
+   3. Para cada resultado, tenta `prisma.lead.create` com `status = novo`,
+      `score = 0`. Conflito em `place_id` (unique) → ignora silenciosamente
+      e incrementa `ignorados`.
+   4. Retorna `{ criados, ignorados }`.
+3. UI mostra mensagem e atualiza a lista.
+
+## Mapeamento Places → Lead
+| Lead          | Campo do Places (New)             | Fallback        |
+|---------------|-----------------------------------|-----------------|
+| `nome`        | `displayName.text`                | obrigatório     |
+| `endereco`    | `formattedAddress`                | obrigatório     |
+| `telefone`    | `nationalPhoneNumber`             | `null`          |
+| `website`     | `websiteUri`                      | `null`          |
+| `categoria`   | `primaryType` (ou `types[0]`)     | `"desconhecido"`|
+| `nota`        | `rating`                          | `null`          |
+| `num_avaliacoes` | `userRatingCount`              | `null`          |
+| `place_id`    | `id`                              | obrigatório     |
+
+`nota` e `num_avaliacoes` (adicionados na F003 como sinal de porte) seguem a
+mesma regra dos demais: ausentes no objeto do Places → `null`. Não mudam o
+SKU cobrado (ver contrato).
+
+Lead criado: `status = novo`, `score = 0`.
+
+Contrato completo da Places API em
+[`/specs/03-contracts/google-places.md`](../03-contracts/google-places.md).
+
+## Critérios de aceitação
+- [ ] **AC1** — Enviar `termo="barbearia"` + `localizacao="Curitiba PR"`
+      cria até 20 Leads novos no banco com `status=novo` e `score=0`.
+- [ ] **AC2** — Rodar a mesma busca duas vezes não duplica nenhum Lead
+      (`place_id` é unique). A segunda execução reporta todos como
+      `ignorados`.
+- [ ] **AC3** — Cada Lead criado tem `nome`, `endereco`, `categoria`,
+      `place_id` preenchidos. `telefone` e `website` podem ser `null`.
+- [ ] **AC4** — Resposta 4xx/5xx da Places API é capturada: a Server
+      Action retorna `{ erro: string }` e a UI exibe a mensagem sem
+      quebrar a aplicação.
+- [ ] **AC5** — A página `/leads` lista todos os Leads ordenados por
+      `created_at desc`, mostrando `nome`, `categoria`, `status`,
+      `endereco` e `website` (link clicável se presente).
+- [ ] **AC6** — Chave da Places API é lida exclusivamente de
+      `process.env.GOOGLE_PLACES_API_KEY`. Ausência da chave →
+      Server Action retorna erro descritivo (`"GOOGLE_PLACES_API_KEY não configurada"`).
+- [ ] **AC7** — Validação Zod falha → mensagem específica do campo
+      inválido na UI, sem chamar a Places API.
+
+## Decisões de implementação
+- Lógica do Places em `src/lib/places/` (sem dep de Next, testável
+  isoladamente).
+- Server Action em `src/actions/leads/coletar.ts`, fina — só orquestra
+  `lib/places` + Prisma.
+- Página única em `src/app/leads/page.tsx` (form + lista).
+- Sem React Query / SWR — `revalidatePath('/leads')` após a action.
+
+## Fora do escopo (F001)
+- Paginação do Places (`nextPageToken`) → eventual F-coleta-v2.
+- Place Details → descartado na Fase 1: o Text Search já retorna
+  telefone/website na mesma FieldMask (ver F002, Fora do escopo).
+- Diagnóstico automático após coleta → F002.
+- Filtros, busca e ordenação na lista de Leads → F-listagem.
+- Cálculo de score → F003.
+- Detecção de Dor → F004.
+- Outreach → F005.
+
+## Custo estimado (Places API New, maio/2026)
+A FieldMask escolhida (`displayName`, `formattedAddress`, `primaryType`,
+`types`, `nationalPhoneNumber`, `websiteUri`) dispara o **SKU Enterprise**
+do Text Search — o mais alto. Cobrança é **por request** (não por place
+retornado).
+
+| SKU         | Free tier mensal | Após o free tier |
+|-------------|------------------|------------------|
+| IDs Only    | ilimitado        | grátis           |
+| Pro         | 5.000            | $32 / 1.000      |
+| **Enterprise** | **1.000**     | **$35 / 1.000**  |
+
+Para um operador solo (~50 buscas/mês), o uso fica confortavelmente
+dentro do free tier Enterprise → **$0/mês**. O ponto de inflexão é
+1.001 buscas/mês (≈ 33 buscas/dia), bem acima do uso esperado.

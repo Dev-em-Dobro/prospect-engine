@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-fira-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-fira-code), ui-monospace, monospace;
+
+  --color-background: #09090b;
+  --color-foreground: #fafafa;
+  --color-card: #101013;
+  --color-border: #27272a;
+  --color-muted: #a1a1aa;
+  --color-primary: #22c55e;
+  --color-primary-hover: #16a34a;
+  --color-primary-foreground: #03180a;
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  ::selection {
+    @apply bg-primary/30 text-foreground;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-xl border border-border bg-card p-5;
+  }
+
+  .btn-primary {
+    @apply inline-flex cursor-pointer items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors duration-200 hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-ghost {
+    @apply inline-flex cursor-pointer items-center rounded-md border border-border bg-transparent px-2 py-1 text-xs text-zinc-300 transition-colors duration-200 hover:border-zinc-600 hover:bg-zinc-800/60 hover:text-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .input-base {
+    @apply w-full rounded-lg border border-border bg-zinc-900/70 px-3 py-2 text-sm text-foreground transition-colors duration-200 placeholder:text-zinc-500 focus:border-primary/60 focus:ring-2 focus:ring-primary/25 focus:outline-none;
+  }
+
+  .badge {
+    @apply inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium;
+  }
+
+  .alert-ok {
+    @apply rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-300;
+  }
+
+  .alert-erro {
+    @apply rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300;
+  }
+}
