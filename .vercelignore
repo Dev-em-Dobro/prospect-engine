@@ -1,0 +1,7 @@
+# Nunca enviar env locais no deploy — as variáveis de produção vivem no
+# painel da Vercel (Project Settings → Environment Variables).
+.env
+.env*.local
+
+# Config local do Claude Code, não faz parte do app.
+.claude

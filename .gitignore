@@ -63,3 +63,5 @@ logs
 # python (skills)
 __pycache__/
 *.pyc
+
+.vercel

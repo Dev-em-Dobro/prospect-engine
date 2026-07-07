@@ -46,6 +46,10 @@ Abra http://localhost:3000.
 
 ## Obter a chave da Google Places API
 
+> 📘 **Alunos:** há um passo a passo completo — criar a chave, como funcionam
+> os créditos/cobrança e como configurar sem vazar a chave — em
+> [`docs/tutorial-google-places.md`](./docs/tutorial-google-places.md).
+
 A chave do Google Places (e da PageSpeed Insights) é criada dentro de um
 projeto no [Google Cloud Console](https://console.cloud.google.com).
 
