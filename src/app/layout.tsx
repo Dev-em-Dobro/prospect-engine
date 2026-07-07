@@ -15,8 +15,8 @@ const firaCode = Fira_Code({
 });
 
 export const metadata: Metadata = {
-  title: "prospec enginne",
-  description: "Ferramenta interna de prospecção",
+  title: "prospect engine",
+  description: "Motor de prospecção automatizada",
 };
 
 export default function RootLayout({
