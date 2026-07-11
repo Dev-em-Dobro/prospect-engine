@@ -113,7 +113,6 @@ export default async function LeadsPage() {
                   <th className="px-3 py-3 font-medium">Nome</th>
                   <th className="px-3 py-3 font-medium">Categoria</th>
                   <th className="px-3 py-3 font-medium">Status</th>
-                  <th className="px-3 py-3 font-medium">Valor</th>
                   <th className="px-3 py-3 font-medium">Score</th>
                   <th className="px-3 py-3 font-medium">Avaliações</th>
                   <th className="px-3 py-3 font-medium">Site</th>

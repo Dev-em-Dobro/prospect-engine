@@ -108,15 +108,10 @@ export function LeadRow(p: LeadRowProps) {
           <span className={`badge ${STATUS_BADGE[p.status]}`}>{p.status}</span>
         </td>
         <td className="px-3 py-2.5 whitespace-nowrap">
-          <span className="badge bg-sky-500/15 font-mono text-sky-300">
-            {p.valor}
-          </span>
-          <span className="ml-1 text-xs text-zinc-500">{p.tier}</span>
-        </td>
-        <td className="px-3 py-2.5">
           <span className={`badge font-mono ${scoreBadge(p.score)}`}>
             {p.score}
           </span>
+          <span className="ml-1 text-xs text-zinc-500">{p.tier}</span>
         </td>
         <td className="px-3 py-2.5 whitespace-nowrap">
           <Avaliacoes nota={p.nota} numAvaliacoes={p.numAvaliacoes} />
