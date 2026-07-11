@@ -7,6 +7,7 @@ import { DiagnosticarButton } from "./diagnosticar-button";
 import { DiagnosticarUxButton } from "./diagnosticar-ux-button";
 import { PriorizarButton } from "./priorizar-button";
 import { GerarOutreachButton } from "./gerar-outreach-button";
+import { ResponderObjecaoPanel } from "./responder-objecao-panel";
 import { GerarPropostaButton } from "./gerar-proposta-button";
 import { DesfechoButtons } from "./desfecho-buttons";
 
@@ -349,6 +350,9 @@ export function LeadRow(p: LeadRowProps) {
                   {p.website && <DiagnosticarUxButton leadId={p.id} />}
                   <PriorizarButton leadId={p.id} />
                   <GerarOutreachButton leadId={p.id} />
+                  {["contatado", "respondeu", "qualificado"].includes(
+                    p.status,
+                  ) && <ResponderObjecaoPanel leadId={p.id} />}
                   {["respondeu", "qualificado", "proposta"].includes(p.status) &&
                     p.diag && <GerarPropostaButton leadId={p.id} />}
                   {p.emAberto && <DesfechoButtons leadId={p.id} />}
