@@ -1,10 +1,17 @@
 # prospect engine
 
-Motor de prospecção automatizada, genérico e sem marca: cada pessoa roda a
-sua própria instância, configurada com as suas chaves de API (e, opcional,
-a sua empresa/oferta em `src/lib/brand.ts`). Coleta estabelecimentos,
-diagnostica presença digital, prioriza por score e gera mensagens de
-outreach via Claude API.
+Motor de prospecção para **negócios locais**: acha estabelecimentos que precisam
+de um dev, diagnostica a presença digital, prioriza por score e gera Outreach via
+Claude API. **A partir da Fase 2, é um app hospedado para alunos**: cada aluno faz
+**login**, o app é **multi-tenant** (cada um vê só os seus dados) e usa as
+**próprias chaves de API** (BYOK), configuráveis na UI. A marca/oferta fica em
+`src/lib/brand.ts`. Visão em `specs/00-product-vision.md`, roadmap de lançamento
+em `specs/07-lancamento-para-alunos.md`, briefing em `specs/08-briefing.md`.
+
+> **Fase 2 em construção.** Login, multi-tenant e BYOK ainda estão sendo
+> implementados (ver `specs/07`). Governança: specs (00 + 07) já atualizadas;
+> **falta abrir os ADRs** (Better Auth, cifra BYOK, e-mail transacional,
+> multi-provider LLM) **antes** do código dessa fase. "Sem nova lib sem ADR."
 
 ## Regras absolutas
 - **Specs em `/specs` são a fonte da verdade.** Código segue spec, nunca o contrário.
@@ -22,6 +29,9 @@ outreach via Claude API.
 - Claude API para geração de outreach
 - Google Places API + PageSpeed Insights API para coleta e diagnóstico
 - **Sem workers, sem filas** — tudo via Server Actions síncronas na Fase 1
+- **Fase 2 (pendente de ADR):** Better Auth (login), multi-tenant por `user_id`,
+  cifra das chaves BYOK, e-mail transacional (magic link) e camada multi-provider
+  LLM. Ver `specs/07-lancamento-para-alunos.md`.
 - **Sem nova lib sem ADR** em `/specs/04-decisions/`
 
 ## Convenções de código

@@ -1,16 +1,21 @@
 # 07 — Lançamento para Alunos (Fase 2)
 
 ## Status
-Proposta — 2026-07-12
+Proposta — 2026-07-12 · decisões fechadas em 2026-07-13.
+
+## Meta de lançamento
+**20/07/2026, ao vivo às 20h** (alunos Dev em Dobro). Com os bloqueadores abaixo
+(auth, multi-tenant, BYOK, deploy, LGPD — cada um **G**), 7 dias é apertado pro
+SaaS completo: tratar o dia 20 como o **evento de lançamento na live** e mirar
+**beta fechado** primeiro, priorizando o caminho crítico e empurrando o resto
+pra fast-follow. Ver o [briefing](08-briefing.md).
 
 ## Contexto — a mudança de premissa
 Hoje o produto é **ferramenta interna**: um operador, sem login, self-hosted,
 chaves de API no `.env` (ver [visão](00-product-vision.md) e `CLAUDE.md`).
 
 A meta agora é **liberar para alunos**: um app **hospedado**, cada aluno faz
-**login** e usa as **próprias chaves** (modelo BYOK — *bring your own key*). Isso
-**contradiz** a visão atual e vários itens hoje listados como "Fora de escopo na
-Fase 1" (multi-tenant, auth, envio, CRM). É uma **Fase 2**.
+**login** e usa as **próprias chaves** (modelo BYOK — *bring your own key*). 
 
 > **Governança (regra do projeto).** Antes de qualquer código desta fase:
 > 1. Atualizar `00-product-vision.md` e `CLAUDE.md` (deixam de valer "ferramenta
@@ -42,9 +47,10 @@ Bloqueia o lançamento: 🚫 sim · ⭐ desejável (pode ser fast-follow).
 ## 1. Autenticação — login (F014)
 Novo lib → **ADR Better Auth** (métodos, sessão, adapter Prisma).
 
-- [ ] ADR: Better Auth + adapter Prisma/Neon; métodos (e-mail+senha, magic link, Google OAuth?).
+- [ ] ADR: Better Auth + adapter Prisma/Neon; métodos: **Google OAuth + magic link**
+      (sem senha; exige provedor de e-mail transacional).
 - [ ] Modelos de auth no schema (User/Session/Account/Verification).
-- [ ] Telas: login, cadastro, recuperar senha, logout.
+- [ ] Telas: login/cadastro (Google + magic link), aguardando verificação de e-mail, logout.
 - [ ] Middleware protegendo `/`, `/leads`, `/conteudo`, `/treino`, `/configuracao`.
 - [ ] Server Actions passam a exigir sessão (helper `requireUser()`).
 
@@ -155,20 +161,38 @@ Agora há **usuários externos + chaves + dados** — o risco muda de patamar.
 
 ---
 
-## Decisões tomadas (2026-07-12)
+## Decisões tomadas
+
+### 2026-07-12
 - **Auth:** **Better Auth** (confirmado).
 - **Provedores de IA:** **Anthropic, OpenAI e Gemini** (Grok fora de escopo). A
   config (F016) aceita as 3 chaves; o uso efetivo de OpenAI/Gemini é a F017.
 
+### 2026-07-13
+- **Hospedagem:** **um único app compartilhado multi-tenant (SaaS).** Self-host
+  deixa de ser alvo suportado — o código segue genérico, mas sem investir nisso.
+- **Cifra das chaves (F016):** **chave-mestra em env var do servidor (Vercel
+  Secret) com AES-256-GCM** no MVP; KMS gerenciado fica como evolução pós-beta.
+  O ADR deve abstrair a cifra atrás de uma interface (padrão *envelope*) pra
+  trocar env-var → KMS sem mexer nos call sites. Fixar no ADR: chave de 32 bytes,
+  IV/nonce aleatório por registro, guardar `IV + ciphertext + auth tag`, coluna
+  de versão de chave (rotação) e **nunca logar segredo**.
+- **Banco:** **multi-tenant compartilhado por `user_id`** (tenancy por linha),
+  um schema — como o F015 já propõe. Nada de schema/DB por aluno.
+- **Login (Better Auth):** **Google OAuth (principal) + magic link; sem senha.**
+  Exige provedor de e-mail transacional (ex.: Resend). Plano B, se não quiser
+  depender de deliverability no dia 1: Google OAuth + e-mail/senha.
+- **Limites por aluno:** **sim** — limites diários por usuário via tabela
+  contadora no banco (`user_id, data, ação, contador`), sem Redis (casa com
+  "sem workers"). Partida (configurável por env/plano): ~50 coletas/dia,
+  ~200 diagnósticos/dia, ~100 gerações LLM/dia. Monitorar no PostHog e afrouxar
+  conforme o uso real.
+
 ## Decisões em aberto (precisam da sua definição)
-1. **Modelo de hospedagem:** um app compartilhado multi-tenant (o que "login +
-   config" implica) — confirmado? Ou também manter um template self-host?
-2. **Cifra das chaves:** onde fica a chave-mestra (env do servidor / KMS gerenciado)?
-3. **Banco:** multi-tenant compartilhado (`user_id`) — recomendado — ou 1 schema/DB
-   por aluno?
-4. **Domínio:** qual nome? Quem compra e gerencia o DNS?
-5. **Better Auth — métodos de login:** e-mail+senha, magic link, Google OAuth?
-6. **Limites por aluno:** teto de uso no recurso compartilhado (nº de coletas/dia etc.)?
+1. **Domínio — nome:** recomendado **subdomínio de um domínio Dev em Dobro
+   existente** (ex.: `prospeccao.devemdobro.com`), DNS na Vercel, titularidade do
+   registrar com você. Falta confirmar o domínio/subdomínio (ou optar por um
+   domínio dedicado, se quiser marca própria). Define também `src/lib/brand.ts`.
 
 ## MVP — caminho crítico (o mínimo pra abrir)
 Ordem sugerida (bloqueadores primeiro):
