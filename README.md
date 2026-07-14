@@ -32,17 +32,24 @@ npm install
 
 # configurar as variáveis de ambiente (copie .env.example → .env e preencha)
 # DATABASE_URL, ANTHROPIC_API_KEY, GOOGLE_PLACES_API_KEY, PAGESPEED_API_KEY
+# F014 auth: BETTER_AUTH_SECRET, BETTER_AUTH_URL, GOOGLE_CLIENT_ID,
+# GOOGLE_CLIENT_SECRET, EMAIL_PROVIDER, EMAIL_FROM
+# (magic link local: npm run mailpit + EMAIL_PROVIDER=mailpit — ver F014)
 
 # (opcional) personalizar a sua empresa/oferta nas mensagens: src/lib/brand.ts
 
 # criar as tabelas no banco (migrations)
 npx prisma migrate dev
 
+# magic link local (Mailpit) — UI em http://127.0.0.1:8025
+npm run mailpit
+
 # subir o servidor de desenvolvimento
 npm run dev
 ```
 
-Abra http://localhost:3000.
+Abra http://localhost:3000. Sem sessão, o app redireciona para `/login`.
+Magic links locais aparecem em http://127.0.0.1:8025.
 
 ## Obter a chave da Google Places API
 

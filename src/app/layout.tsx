@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Fira_Code, Fira_Sans } from "next/font/google";
-import { Sidebar } from "@/components/sidebar";
+import { AppShell } from "@/components/app-shell";
 import "./globals.css";
 
 const firaSans = Fira_Sans({
@@ -27,8 +27,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className={`${firaSans.variable} ${firaCode.variable}`}>
       <body className="font-sans antialiased">
-        <Sidebar />
-        <div className="md:pl-60">{children}</div>
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );

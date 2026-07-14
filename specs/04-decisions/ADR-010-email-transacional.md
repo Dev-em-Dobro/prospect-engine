@@ -9,8 +9,8 @@ e-mail transacional** (o link de acesso). É uma **lib/serviço novo** → ADR. 
 **infra nossa** (não BYOK): a chave do provedor é do servidor, não do aluno.
 
 ## Decisão
-Adotar o **Resend** (SDK `resend`) como provedor de e-mail transacional, isolado
-em `src/lib/email/`.
+Adotar o **Resend** (SDK `resend`) como provedor de e-mail transacional **em
+produção**, isolado em `src/lib/email/`.
 
 - Chave via env do servidor (`RESEND_API_KEY`) — nunca client, nunca commitada.
 - Envio a partir de um **domínio verificado** (subdomínio Dev em Dobro), com
@@ -19,6 +19,15 @@ em `src/lib/email/`.
   transacionais pontuais. **Nada de marketing/disparo em massa** (mantém o
   princípio anti-spam da visão).
 - Free tier cobre o volume de um beta; reavaliar se escalar.
+
+### Dev local — Mailpit (Docker Compose)
+Para testar o magic link **sem** gastar/configurar Resend, o envio local usa
+**Mailpit** via `docker compose` (UI em `:8025`, SMTP em `:1025`).
+
+- `EMAIL_PROVIDER=mailpit` aponta `src/lib/email/` para a **API HTTP** do
+  Mailpit (`POST /api/v1/send`) — **sem lib SMTP nova**.
+- `EMAIL_PROVIDER=resend` (produção / staging real) usa o SDK Resend.
+- Remetente unificado em `EMAIL_FROM`.
 
 ## Alternativas consideradas
 - **SMTP próprio + Nodemailer**: mais barato em tese, mas exige gerir servidor
@@ -39,3 +48,5 @@ em `src/lib/email/`.
   atrasar/cair no spam, o login trava. Mitigar com domínio verificado e teste
   antes do lançamento; plano B de e-mail+senha continua disponível (ADR-007).
 - Mais um serviço externo/conta a gerenciar.
+- Dev local exige Docker (Mailpit) se for testar magic link — aceitável; Google
+  OAuth cobre login sem e-mail.

@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth/client";
 
 function Icone({ d }: { d: React.ReactNode }) {
   return (
@@ -122,6 +123,26 @@ function Brand() {
   );
 }
 
+function LogoutButton({ className }: { className?: string }) {
+  const router = useRouter();
+
+  async function sair() {
+    await authClient.signOut();
+    router.push("/login");
+    router.refresh();
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => void sair()}
+      className={className ?? "btn-ghost w-full justify-center"}
+    >
+      Sair
+    </button>
+  );
+}
+
 export function Sidebar() {
   const pathname = usePathname();
 
@@ -167,29 +188,33 @@ export function Sidebar() {
             </div>
           ))}
         </nav>
-        <div className="border-t border-border px-4 py-3 text-xs text-zinc-500">
-          Ferramenta interna
+        <div className="space-y-2 border-t border-border px-4 py-3">
+          <LogoutButton />
+          <p className="text-xs text-zinc-500">Conta do aluno</p>
         </div>
       </aside>
 
       {/* Top bar (mobile) */}
-      <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-border bg-background/80 px-4 backdrop-blur md:hidden">
+      <header className="sticky top-0 z-40 flex h-14 items-center justify-between gap-2 border-b border-border bg-background/80 px-4 backdrop-blur md:hidden">
         <Brand />
-        <nav className="flex items-center gap-1 text-sm">
-          {GRUPOS.flatMap((g) => g.itens).map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`rounded-md px-2.5 py-1.5 transition-colors duration-200 ${
-                ativo(item.href)
-                  ? "bg-zinc-800/80 text-zinc-50"
-                  : "text-zinc-400 hover:text-zinc-200"
-              }`}
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+        <div className="flex items-center gap-1 text-sm">
+          <nav className="flex items-center gap-1">
+            {GRUPOS.flatMap((g) => g.itens).map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`rounded-md px-2.5 py-1.5 transition-colors duration-200 ${
+                  ativo(item.href)
+                    ? "bg-zinc-800/80 text-zinc-50"
+                    : "text-zinc-400 hover:text-zinc-200"
+                }`}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+          <LogoutButton className="btn-ghost shrink-0" />
+        </div>
       </header>
     </>
   );
