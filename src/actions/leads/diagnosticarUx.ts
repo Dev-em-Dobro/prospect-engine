@@ -4,7 +4,7 @@
 // Spec: F008-diagnostico-ux-ia.md
 
 import { z } from "zod";
-import { prisma } from "@/lib/db";
+import { mensagemEscopo, requireLeadOwned } from "@/lib/db/scoped";
 import {
   capturarScreenshots,
   ScreenshotError,
@@ -39,20 +39,19 @@ export async function diagnosticarUxAction(
     return { kind: "erro", mensagem: "ANTHROPIC_API_KEY não configurada" };
   }
 
-  const lead = await prisma.lead.findUnique({
-    where: { id: parsed.data.lead_id },
-  });
-  if (!lead) {
-    return { kind: "erro", mensagem: "Lead não encontrado" };
-  }
-  if (!lead.website) {
-    return {
-      kind: "erro",
-      mensagem: "Lead sem site — Diagnóstico UX exige website",
-    };
+  if (!process.env.ANTHROPIC_API_KEY) {
+    return { kind: "erro", mensagem: "ANTHROPIC_API_KEY não configurada" };
   }
 
   try {
+    const { lead } = await requireLeadOwned(parsed.data.lead_id);
+    if (!lead.website) {
+      return {
+        kind: "erro",
+        mensagem: "Lead sem site — Diagnóstico UX exige website",
+      };
+    }
+
     const { desktopB64, mobileB64 } = await capturarScreenshots(lead.website);
 
     const analise = await analisarUx({
@@ -62,9 +61,10 @@ export async function diagnosticarUxAction(
       mobileB64,
     });
 
-    // AC6: nada é persistido nesta fase (ver F008 — Fora do escopo).
     return { kind: "ok", analise };
   } catch (e) {
+    const escopo = mensagemEscopo(e);
+    if (escopo) return { kind: "erro", mensagem: escopo };
     if (e instanceof ScreenshotError || e instanceof AnaliseUxError) {
       return { kind: "erro", mensagem: e.message };
     }

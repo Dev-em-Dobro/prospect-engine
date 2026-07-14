@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { requireTenant } from "@/lib/db/scoped";
 import { valor as calcularValor } from "@/lib/score/score";
 import { classificarWebsite } from "@/lib/diagnostico/agregador";
 import { filaDeFollowUp } from "@/lib/followup";
@@ -9,7 +10,7 @@ import { GerarOutreachButton } from "./gerar-outreach-button";
 import { LeadRow } from "./lead-row";
 import { linkWhatsapp } from "./ui";
 
-// Ferramenta interna: a lista sempre reflete o banco, sem prerender.
+// Sempre reflete o banco do aluno logado (F015) — sem cache cross-tenant.
 export const dynamic = "force-dynamic";
 
 const fmtData = new Intl.DateTimeFormat("pt-BR", {
@@ -18,11 +19,12 @@ const fmtData = new Intl.DateTimeFormat("pt-BR", {
 });
 
 export default async function LeadsPage() {
+  const { whereUser } = await requireTenant();
   const leads = await prisma.lead.findMany({
+    where: whereUser,
     orderBy: [{ score: "desc" }, { created_at: "desc" }],
     include: {
       diagnosticos: { orderBy: { executado_em: "desc" }, take: 1 },
-      // Todos os Outreach (mais recente primeiro) pra exibir no modal do Lead.
       outreaches: { orderBy: { gerado_em: "desc" } },
     },
   });

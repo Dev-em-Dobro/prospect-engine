@@ -7,6 +7,7 @@ import { entradaSchema } from "@/lib/simulador/validacao";
 import { avaliarSimulacao } from "@/lib/simulador/avaliar";
 import { SimuladorError } from "@/lib/simulador/simular";
 import type { Scorecard } from "@/lib/simulador/avaliar";
+import { mensagemEscopo, requireTenant } from "@/lib/db/scoped";
 
 export type AvaliarResult =
   | { ok: true; scorecard: Scorecard }
@@ -15,6 +16,14 @@ export type AvaliarResult =
 export async function avaliarSimulacaoAction(
   input: unknown,
 ): Promise<AvaliarResult> {
+  try {
+    await requireTenant();
+  } catch (e) {
+    const escopo = mensagemEscopo(e);
+    if (escopo) return { ok: false, erro: escopo };
+    throw e;
+  }
+
   const parsed = entradaSchema.safeParse(input);
   if (!parsed.success) return { ok: false, erro: "Input inválido" };
 

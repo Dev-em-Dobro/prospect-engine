@@ -35,6 +35,8 @@ npm install
 # F014 auth: BETTER_AUTH_SECRET, BETTER_AUTH_URL, GOOGLE_CLIENT_ID,
 # GOOGLE_CLIENT_SECRET, EMAIL_PROVIDER, EMAIL_FROM / RESEND_SMTP_*
 # (magic link local: npm run mailpit + EMAIL_PROVIDER=mailpit — ver F014)
+# Isolamento multi-tenant (F015): npm run test:e2e:isolamento
+# → screenshots em test-results/isolamento/ (gitignored)
 
 # (opcional) personalizar a sua empresa/oferta nas mensagens: src/lib/brand.ts
 

@@ -1,14 +1,17 @@
-// F013 — página de treino (roleplay). Server component: oferece Leads como
+// F013 — página de treino (roleplay). Server component: lê Leads como
 // cenário (categoria + dores derivadas). Spec: F013-simulador-de-venda.md.
 
 import { prisma } from "@/lib/db";
+import { requireTenant } from "@/lib/db/scoped";
 import { derivarDoDiagnostico } from "@/lib/dores/derivarDoDiagnostico";
 import { Simulador } from "./simulador";
 
+export const dynamic = "force-dynamic";
+
 export default async function TreinoPage() {
-  // Leads já diagnosticados servem de cenário realista (categoria + Dores).
+  const { whereUser } = await requireTenant();
   const leads = await prisma.lead.findMany({
-    where: { diagnosticos: { some: {} } },
+    where: { ...whereUser, diagnosticos: { some: {} } },
     orderBy: { score: "desc" },
     take: 50,
     include: { diagnosticos: { orderBy: { executado_em: "desc" }, take: 1 } },

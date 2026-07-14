@@ -6,6 +6,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
+import { mensagemEscopo, requireTenant } from "@/lib/db/scoped";
 import {
   gerarOutreach as gerarOutreachLib,
   OutreachError,
@@ -28,10 +29,6 @@ type DiagResumo = {
   performance_mobile: number | null;
 };
 
-/**
- * Deriva as Dores em linguagem natural a partir do último Diagnóstico.
- * Até a F004 existir, lê o Diagnóstico direto (mesmos fatos das Dores).
- */
 function derivarDores(diag: DiagResumo, website: string | null): string[] {
   if (!website || !diag.tem_site) {
     return ["não tem site / presença digital própria"];
@@ -49,12 +46,10 @@ function derivarDores(diag: DiagResumo, website: string | null): string[] {
   return dores;
 }
 
-/** Monta o link wa.me. Normaliza pra dígitos e prefixa 55 (Brasil). */
 function linkWhatsapp(telefone: string | null, mensagem: string): string | null {
   if (!telefone) return null;
   let digitos = telefone.replace(/\D/g, "");
   if (!digitos) return null;
-  // Número nacional (DDD + número) tem até 11 dígitos → falta o código do país.
   if (digitos.length <= 11) digitos = `55${digitos}`;
   return `https://wa.me/${digitos}?text=${encodeURIComponent(mensagem)}`;
 }
@@ -71,59 +66,69 @@ export async function gerarOutreachAction(
     return { kind: "erro", mensagem: "Input inválido" };
   }
 
-  // AC4: falha de configuração detectada antes de qualquer chamada.
   if (!process.env.ANTHROPIC_API_KEY) {
     return { kind: "erro", mensagem: "ANTHROPIC_API_KEY não configurada" };
   }
 
-  const lead = await prisma.lead.findUnique({
-    where: { id: parsed.data.lead_id },
-    include: { diagnosticos: { orderBy: { executado_em: "desc" }, take: 1 } },
-  });
-  if (!lead) {
-    return { kind: "erro", mensagem: "Lead não encontrado" };
-  }
-
-  const diag = lead.diagnosticos[0];
-  if (!diag) {
-    return {
-      kind: "erro",
-      mensagem: "Diagnostique o Lead antes de gerar a Outreach",
-    };
-  }
-
-  const ctx: ContextoLead = {
-    nome: lead.nome,
-    categoria: lead.categoria,
-    endereco: lead.endereco,
-    dores: derivarDores(diag, lead.website),
-  };
-
-  let mensagem: string;
   try {
-    ({ mensagem } = await gerarOutreachLib(ctx, parsed.data.tipo));
-  } catch (e) {
-    if (e instanceof OutreachError) {
-      return { kind: "erro", mensagem: e.message };
+    const { userId } = await requireTenant();
+    const lead = await prisma.lead.findFirst({
+      where: { id: parsed.data.lead_id, user_id: userId },
+      include: { diagnosticos: { orderBy: { executado_em: "desc" }, take: 1 } },
+    });
+    if (!lead) {
+      return { kind: "erro", mensagem: "Lead não encontrado" };
     }
-    return { kind: "erro", mensagem: "Falha ao gerar a Outreach. Tente novamente." };
+
+    const diag = lead.diagnosticos[0];
+    if (!diag) {
+      return {
+        kind: "erro",
+        mensagem: "Diagnostique o Lead antes de gerar a Outreach",
+      };
+    }
+
+    const ctx: ContextoLead = {
+      nome: lead.nome,
+      categoria: lead.categoria,
+      endereco: lead.endereco,
+      dores: derivarDores(diag, lead.website),
+    };
+
+    let mensagem: string;
+    try {
+      ({ mensagem } = await gerarOutreachLib(ctx, parsed.data.tipo));
+    } catch (e) {
+      if (e instanceof OutreachError) {
+        return { kind: "erro", mensagem: e.message };
+      }
+      return {
+        kind: "erro",
+        mensagem: "Falha ao gerar a Outreach. Tente novamente.",
+      };
+    }
+
+    const outreach = await prisma.outreach.create({
+      data: {
+        user_id: userId,
+        lead_id: lead.id,
+        canal: "whatsapp",
+        conteudo: mensagem,
+        enviado: false,
+      },
+    });
+
+    revalidatePath("/leads");
+
+    return {
+      kind: "ok",
+      mensagem,
+      waLink: linkWhatsapp(lead.telefone, mensagem),
+      outreachId: outreach.id,
+    };
+  } catch (e) {
+    const escopo = mensagemEscopo(e);
+    if (escopo) return { kind: "erro", mensagem: escopo };
+    throw e;
   }
-
-  const outreach = await prisma.outreach.create({
-    data: {
-      lead_id: lead.id,
-      canal: "whatsapp",
-      conteudo: mensagem,
-      enviado: false,
-    },
-  });
-
-  revalidatePath("/leads");
-
-  return {
-    kind: "ok",
-    mensagem,
-    waLink: linkWhatsapp(lead.telefone, mensagem),
-    outreachId: outreach.id,
-  };
 }

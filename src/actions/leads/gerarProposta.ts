@@ -6,8 +6,7 @@
 // status nem persiste: a promoção a `proposta` é o botão "Proposta" existente
 // (registrarDesfecho, F006/F010).
 
-import { z } from "zod";
-import { prisma } from "@/lib/db";
+import { mensagemEscopo, requireTenant } from "@/lib/db/scoped";
 import { derivarDoDiagnostico } from "@/lib/dores/derivarDoDiagnostico";
 import { servicosRecomendados } from "@/lib/proposta/servicos";
 import { precificar, type Precificacao } from "@/lib/proposta/precos";
@@ -17,6 +16,8 @@ import {
   PropostaError,
   type PropostaTexto,
 } from "@/lib/proposta/gerarProposta";
+import { prisma } from "@/lib/db";
+import { z } from "zod";
 
 const schema = z.object({
   lead_id: z.string().cuid("lead_id inválido"),
@@ -41,58 +42,63 @@ export async function gerarPropostaAction(
     return { kind: "erro", mensagem: "Input inválido" };
   }
 
-  // Falha de configuração detectada antes de qualquer chamada.
   if (!process.env.ANTHROPIC_API_KEY) {
     return { kind: "erro", mensagem: "ANTHROPIC_API_KEY não configurada" };
   }
 
-  const lead = await prisma.lead.findUnique({
-    where: { id: parsed.data.lead_id },
-    include: { diagnosticos: { orderBy: { executado_em: "desc" }, take: 1 } },
-  });
-  if (!lead) {
-    return { kind: "erro", mensagem: "Lead não encontrado" };
-  }
-
-  const diag = lead.diagnosticos[0];
-  if (!diag) {
-    return {
-      kind: "erro",
-      mensagem: "Diagnostique o Lead antes de gerar a Proposta",
-    };
-  }
-
-  // Determinístico: Dores → Serviços → faixa de preço. Sem IA.
-  const dores = derivarDoDiagnostico(diag, lead.website);
-  const servicos = servicosRecomendados(diag);
-  const precificacao = precificar({
-    servicos,
-    categoria: lead.categoria,
-    num_avaliacoes: lead.num_avaliacoes,
-  });
-
-  let proposta: PropostaTexto;
   try {
-    proposta = await gerarPropostaLib({
-      nome: lead.nome,
-      categoria: lead.categoria,
-      dores,
-      servicos,
+    const { userId } = await requireTenant();
+    const lead = await prisma.lead.findFirst({
+      where: { id: parsed.data.lead_id, user_id: userId },
+      include: { diagnosticos: { orderBy: { executado_em: "desc" }, take: 1 } },
     });
-  } catch (e) {
-    if (e instanceof PropostaError) {
-      return { kind: "erro", mensagem: e.message };
+    if (!lead) {
+      return { kind: "erro", mensagem: "Lead não encontrado" };
     }
-    return {
-      kind: "erro",
-      mensagem: "Falha ao gerar a Proposta. Tente novamente.",
-    };
-  }
 
-  return {
-    kind: "ok",
-    proposta,
-    precificacao,
-    textoCopiavel: formatarPropostaTexto(proposta, precificacao),
-  };
+    const diag = lead.diagnosticos[0];
+    if (!diag) {
+      return {
+        kind: "erro",
+        mensagem: "Diagnostique o Lead antes de gerar a Proposta",
+      };
+    }
+
+    const dores = derivarDoDiagnostico(diag, lead.website);
+    const servicos = servicosRecomendados(diag);
+    const precificacao = precificar({
+      servicos,
+      categoria: lead.categoria,
+      num_avaliacoes: lead.num_avaliacoes,
+    });
+
+    let proposta: PropostaTexto;
+    try {
+      proposta = await gerarPropostaLib({
+        nome: lead.nome,
+        categoria: lead.categoria,
+        dores,
+        servicos,
+      });
+    } catch (e) {
+      if (e instanceof PropostaError) {
+        return { kind: "erro", mensagem: e.message };
+      }
+      return {
+        kind: "erro",
+        mensagem: "Falha ao gerar a Proposta. Tente novamente.",
+      };
+    }
+
+    return {
+      kind: "ok",
+      proposta,
+      precificacao,
+      textoCopiavel: formatarPropostaTexto(proposta, precificacao),
+    };
+  } catch (e) {
+    const escopo = mensagemEscopo(e);
+    if (escopo) return { kind: "erro", mensagem: escopo };
+    throw e;
+  }
 }

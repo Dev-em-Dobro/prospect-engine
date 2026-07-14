@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
+import { requireTenant } from "@/lib/db/scoped";
 import { filaDeFollowUp } from "@/lib/followup";
 import { ESTAGIOS_EM_ABERTO, taxasDeConversao } from "@/lib/funil";
 import type { LeadStatus } from "@prisma/client";
 
-// Dashboard sempre reflete o banco, sem prerender.
+// Dashboard sempre reflete só os dados do aluno (F015).
 export const dynamic = "force-dynamic";
 
 const ESTAGIOS: { status: LeadStatus; label: string; cor: string }[] = [
@@ -24,7 +25,9 @@ const LABEL: Record<LeadStatus, string> = Object.fromEntries(
 ) as Record<LeadStatus, string>;
 
 export default async function DashboardPage() {
+  const { whereUser } = await requireTenant();
   const leads = await prisma.lead.findMany({
+    where: whereUser,
     orderBy: { score: "desc" },
     include: {
       outreaches: {

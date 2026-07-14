@@ -6,6 +6,7 @@
 
 import { entradaSchema } from "@/lib/simulador/validacao";
 import { simularTurno, SimuladorError } from "@/lib/simulador/simular";
+import { mensagemEscopo, requireTenant } from "@/lib/db/scoped";
 
 export type ResponderTurnoResult =
   | { ok: true; mensagem: string }
@@ -14,6 +15,14 @@ export type ResponderTurnoResult =
 export async function responderTurnoAction(
   input: unknown,
 ): Promise<ResponderTurnoResult> {
+  try {
+    await requireTenant();
+  } catch (e) {
+    const escopo = mensagemEscopo(e);
+    if (escopo) return { ok: false, erro: escopo };
+    throw e;
+  }
+
   const parsed = entradaSchema.safeParse(input);
   if (!parsed.success) return { ok: false, erro: "Input inválido" };
 
