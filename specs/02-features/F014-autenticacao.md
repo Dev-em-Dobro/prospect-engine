@@ -63,7 +63,8 @@ Gerados pelo Better Auth com adapter Prisma: `User`, `Session`, `Account`,
 - Middleware de proteção de rotas em `src/middleware.ts`.
 - `src/app/login/page.tsx` (client: Google + magic link).
 - Lib nova? **Sim** — `better-auth` ([ADR-007](../04-decisions/ADR-007-better-auth.md))
-  e `resend` ([ADR-010](../04-decisions/ADR-010-email-transacional.md)).
+  e `nodemailer` para SMTP Resend
+  ([ADR-010](../04-decisions/ADR-010-email-transacional.md)).
 
 ## Como testar (manual)
 1. Preencher no `.env` as vars mínimas (`BETTER_AUTH_*` + e-mail). Secret:
@@ -74,6 +75,7 @@ Gerados pelo Better Auth com adapter Prisma: `User`, `Session`, `Account`,
 4. **Magic link local:** `docker compose up -d` (Mailpit) e
    `EMAIL_PROVIDER=mailpit` + `EMAIL_FROM` + `MAILPIT_URL=http://127.0.0.1:8025`
    ([ADR-010](../04-decisions/ADR-010-email-transacional.md)). UI: http://127.0.0.1:8025
+   Em produção: `EMAIL_PROVIDER=resend` + `RESEND_SMTP_*`.
 5. `npm run dev` — sem as envs de auth o boot deve falhar com mensagem clara.
 6. Sem cookie: abrir `/`, `/leads`, `/conteudo`, `/treino` → redirect `/login`.
 7. Google: entrar → 1ª vez cria User/Session (Prisma Studio / tabela `user`);

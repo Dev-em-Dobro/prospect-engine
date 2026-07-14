@@ -33,7 +33,7 @@ npm install
 # configurar as variáveis de ambiente (copie .env.example → .env e preencha)
 # DATABASE_URL, ANTHROPIC_API_KEY, GOOGLE_PLACES_API_KEY, PAGESPEED_API_KEY
 # F014 auth: BETTER_AUTH_SECRET, BETTER_AUTH_URL, GOOGLE_CLIENT_ID,
-# GOOGLE_CLIENT_SECRET, EMAIL_PROVIDER, EMAIL_FROM
+# GOOGLE_CLIENT_SECRET, EMAIL_PROVIDER, EMAIL_FROM / RESEND_SMTP_*
 # (magic link local: npm run mailpit + EMAIL_PROVIDER=mailpit — ver F014)
 
 # (opcional) personalizar a sua empresa/oferta nas mensagens: src/lib/brand.ts
