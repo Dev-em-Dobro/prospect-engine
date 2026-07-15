@@ -7,9 +7,12 @@ import { Sidebar } from "@/components/sidebar";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isLogin = pathname === "/login";
+  const semChrome =
+    pathname === "/login" ||
+    pathname === "/termos" ||
+    pathname === "/privacidade";
 
-  if (isLogin) {
+  if (semChrome) {
     return <>{children}</>;
   }
 

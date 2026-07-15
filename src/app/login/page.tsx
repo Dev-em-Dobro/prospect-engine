@@ -51,6 +51,18 @@ export default function LoginPage() {
           Ao entrar, você configura as suas próprias chaves de API e prospecta
           só os seus Leads.
         </p>
+        <p className="text-center text-xs text-zinc-600">
+          <a href="/termos" className="hover:text-zinc-400 hover:underline">
+            Termos de Uso
+          </a>
+          {" · "}
+          <a
+            href="/privacidade"
+            className="hover:text-zinc-400 hover:underline"
+          >
+            Privacidade
+          </a>
+        </p>
       </div>
     </main>
   );

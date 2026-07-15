@@ -209,7 +209,15 @@ export function Sidebar() {
         </nav>
         <div className="space-y-2 border-t border-border px-4 py-3">
           <LogoutButton />
-          <p className="text-xs text-zinc-500">Conta do aluno</p>
+          <p className="flex flex-wrap gap-x-2 gap-y-1 text-xs text-zinc-500">
+            <Link href="/termos" className="hover:text-zinc-300">
+              Termos
+            </Link>
+            <span aria-hidden>·</span>
+            <Link href="/privacidade" className="hover:text-zinc-300">
+              Privacidade
+            </Link>
+          </p>
         </div>
       </aside>
 

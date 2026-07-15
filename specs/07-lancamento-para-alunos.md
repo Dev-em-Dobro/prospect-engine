@@ -130,24 +130,28 @@ Redesign pra cara de produto (hoje é dashboard funcional interna).
 - [ ] Landing/login com identidade da marca final.
 
 ## 7. Deploy + domínio final
-- [ ] Escolher hospedagem (Vercel provável) — **atenção:** F008 usa Playwright
-      local, que **não roda em serverless**; em produção exige ScreenshotOne
-      (ADR-006) → entra no BYOK (F016).
+- [x] Hospedagem **Vercel** — F008: Playwright local; em prod (serverless)
+      ScreenshotOne via BYOK (ADR-006 / F016). Código: `screenshot.ts` + aviso
+      em `/configuracao`. Health: `GET /api/health`.
 - [ ] Neon de produção + `prisma migrate deploy` no pipeline; backups.
-- [ ] Secrets do servidor (chave de cifra do BYOK, secret de sessão) — não `.env` commitado.
-- [ ] **Comprar o domínio final** (ainda não temos) + DNS + HTTPS.
-- [ ] `.vercelignore` já existe; revisar build e variáveis de ambiente de produção.
+      (Checklist operacional no `README.md` § Deploy.)
+- [x] Secrets do servidor sem default — `BYOK_MASTER_KEY`, `BETTER_AUTH_SECRET`,
+      `BETTER_AUTH_URL`, `DATABASE_URL` validados no boot (`instrumentation.ts` +
+      `src/lib/seguranca/env-servidor.ts`) e em `/api/health` (503 se faltar).
+- [ ] **Comprar / confirmar o domínio final** (ainda aberto) + DNS + HTTPS.
+- [x] `.vercelignore` existe; vars documentadas em `.env.example` + README.
 
 ## 8. Segurança / LGPD / legal
 Agora há **usuários externos + chaves + dados** — o risco muda de patamar.
 
-- [ ] Cifra das chaves em repouso (ver F016) e nunca logar segredo.
-- [ ] Isolamento de dados por usuário testado (ver F015).
-- [ ] **Termos de Uso + Política de Privacidade** (deixa de ser uso interno).
-- [ ] LGPD: base legal, dados dos alunos (PII de login), e manter a regra de só
-      coletar **dado público** dos Leads (Google Places) — envio segue manual.
+- [x] Cifra das chaves em repouso (F016 / ADR-009) e nunca logar segredo.
+- [x] Isolamento de dados por usuário testado (F015 + E2E isolamento).
+- [x] **Termos de Uso + Política de Privacidade** — rotas públicas `/termos` e
+      `/privacidade` (contato em `src/lib/legal.ts`).
+- [x] LGPD: privacidade descreve PII de conta, chaves BYOK cifradas, Leads só
+      com **dado público** (Places); envio de Outreach permanece manual.
 - [ ] Limites anti-abuso do recurso **compartilhado** (rate limit por usuário no
-      app/DB). Custo de API é BYOK, mas compute/DB é nosso.
+      app/DB). Custo de API é BYOK, mas compute/DB é nosso. (fast-follow)
 
 ## 9. Dívida técnica / polish
 - [ ] **Fix arredondamento da faixa de preço (F012)** — `1500×1,15` dá
