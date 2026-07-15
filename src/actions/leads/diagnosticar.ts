@@ -6,6 +6,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
+import { exigirChave } from "@/lib/chaves";
 import { mensagemEscopo, requireLeadOwned } from "@/lib/db/scoped";
 import { classificarWebsite } from "@/lib/diagnostico/agregador";
 import { verificarSite } from "@/lib/diagnostico/verificarSite";
@@ -29,12 +30,9 @@ export async function diagnosticarLead(
     return { kind: "erro", mensagem: "lead_id inválido" };
   }
 
-  if (!process.env.PAGESPEED_API_KEY) {
-    return { kind: "erro", mensagem: "PAGESPEED_API_KEY não configurada" };
-  }
-
   try {
     const { lead, userId } = await requireLeadOwned(parsed.data.lead_id);
+    const googleKey = await exigirChave(userId, "google");
 
     let tem_site = false;
     let site_e_agregador = false;
@@ -55,7 +53,10 @@ export async function diagnosticarLead(
           tem_https = site.temHttps;
           tempo_carregamento_ms = site.tempoMs;
           try {
-            performance_mobile = await performanceMobile(site.urlFinal);
+            performance_mobile = await performanceMobile(
+              site.urlFinal,
+              googleKey,
+            );
           } catch {
             performance_mobile = null;
           }

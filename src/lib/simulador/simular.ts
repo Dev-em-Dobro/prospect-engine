@@ -21,9 +21,13 @@ export class SimuladorError extends Error {
 export async function simularTurno(
   cenario: Cenario,
   historico: Turno[],
+  apiKey: string,
 ): Promise<{ mensagem: string }> {
-  if (!process.env.ANTHROPIC_API_KEY) {
-    throw new SimuladorError(0, "ANTHROPIC_API_KEY não configurada");
+  if (!apiKey) {
+    throw new SimuladorError(
+      0,
+      "Anthropic (IA) não configurada — configure em /configuracao",
+    );
   }
 
   const turnosAluno = historico.filter((t) => t.papel === "aluno").length;
@@ -35,7 +39,7 @@ export async function simularTurno(
     content: t.texto,
   }));
 
-  const client = new Anthropic();
+  const client = new Anthropic({ apiKey });
 
   try {
     const res = await client.messages.create({

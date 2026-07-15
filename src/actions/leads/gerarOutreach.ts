@@ -6,6 +6,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
+import { exigirChave } from "@/lib/chaves";
 import { mensagemEscopo, requireTenant } from "@/lib/db/scoped";
 import {
   gerarOutreach as gerarOutreachLib,
@@ -66,12 +67,9 @@ export async function gerarOutreachAction(
     return { kind: "erro", mensagem: "Input inválido" };
   }
 
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return { kind: "erro", mensagem: "ANTHROPIC_API_KEY não configurada" };
-  }
-
   try {
     const { userId } = await requireTenant();
+    const anthropicKey = await exigirChave(userId, "anthropic");
     const lead = await prisma.lead.findFirst({
       where: { id: parsed.data.lead_id, user_id: userId },
       include: { diagnosticos: { orderBy: { executado_em: "desc" }, take: 1 } },
@@ -97,7 +95,11 @@ export async function gerarOutreachAction(
 
     let mensagem: string;
     try {
-      ({ mensagem } = await gerarOutreachLib(ctx, parsed.data.tipo));
+      ({ mensagem } = await gerarOutreachLib(
+        ctx,
+        anthropicKey,
+        parsed.data.tipo,
+      ));
     } catch (e) {
       if (e instanceof OutreachError) {
         return { kind: "erro", mensagem: e.message };

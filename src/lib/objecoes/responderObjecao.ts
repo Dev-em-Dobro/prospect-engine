@@ -45,13 +45,16 @@ const OBJECAO_FORMAT = jsonSchemaOutputFormat({
 /** Gera 2–3 respostas sugeridas para a objeção do Lead. */
 export async function responderObjecao(
   ctx: ContextoObjecao,
+  apiKey: string,
 ): Promise<{ respostas: RespostaObjecao[] }> {
-  // Falha de configuração antes de qualquer chamada (padrão F002/F005).
-  if (!process.env.ANTHROPIC_API_KEY) {
-    throw new ObjecaoError(0, "ANTHROPIC_API_KEY não configurada");
+  if (!apiKey) {
+    throw new ObjecaoError(
+      0,
+      "Anthropic (IA) não configurada — configure em /configuracao",
+    );
   }
 
-  const client = new Anthropic();
+  const client = new Anthropic({ apiKey });
 
   try {
     const res = await client.messages.parse({

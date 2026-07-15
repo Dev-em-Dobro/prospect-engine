@@ -6,6 +6,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
+import { exigirChave } from "@/lib/chaves";
 import { mensagemEscopo, requireTenant } from "@/lib/db/scoped";
 import { PlacesError, textSearch } from "@/lib/places/textSearch";
 
@@ -45,7 +46,8 @@ export async function coletarLeads(
 
   try {
     const { userId } = await requireTenant();
-    const resultados = await textSearch(query);
+    const googleKey = await exigirChave(userId, "google");
+    const resultados = await textSearch(query, googleKey);
 
     // skipDuplicates: conflito em (user_id, place_id) é ignorado (F015).
     const { count: criados } = await prisma.lead.createMany({

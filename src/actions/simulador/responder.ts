@@ -4,6 +4,7 @@
 // Stateless: recebe cenário + histórico do client, devolve a fala do dono.
 // Não persiste nada.
 
+import { exigirChave } from "@/lib/chaves";
 import { entradaSchema } from "@/lib/simulador/validacao";
 import { simularTurno, SimuladorError } from "@/lib/simulador/simular";
 import { mensagemEscopo, requireTenant } from "@/lib/db/scoped";
@@ -15,8 +16,9 @@ export type ResponderTurnoResult =
 export async function responderTurnoAction(
   input: unknown,
 ): Promise<ResponderTurnoResult> {
+  let userId: string;
   try {
-    await requireTenant();
+    ({ userId } = await requireTenant());
   } catch (e) {
     const escopo = mensagemEscopo(e);
     if (escopo) return { ok: false, erro: escopo };
@@ -26,10 +28,6 @@ export async function responderTurnoAction(
   const parsed = entradaSchema.safeParse(input);
   if (!parsed.success) return { ok: false, erro: "Input inválido" };
 
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return { ok: false, erro: "ANTHROPIC_API_KEY não configurada" };
-  }
-
   const { cenario, historico } = parsed.data;
   const ultimo = historico[historico.length - 1];
   if (!ultimo || ultimo.papel !== "aluno") {
@@ -37,9 +35,12 @@ export async function responderTurnoAction(
   }
 
   try {
-    const { mensagem } = await simularTurno(cenario, historico);
+    const anthropicKey = await exigirChave(userId, "anthropic");
+    const { mensagem } = await simularTurno(cenario, historico, anthropicKey);
     return { ok: true, mensagem };
   } catch (e) {
+    const escopo = mensagemEscopo(e);
+    if (escopo) return { ok: false, erro: escopo };
     if (e instanceof SimuladorError) return { ok: false, erro: e.message };
     return { ok: false, erro: "Falha na simulação. Tente novamente." };
   }

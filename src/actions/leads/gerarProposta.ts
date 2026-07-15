@@ -6,6 +6,7 @@
 // status nem persiste: a promoção a `proposta` é o botão "Proposta" existente
 // (registrarDesfecho, F006/F010).
 
+import { exigirChave } from "@/lib/chaves";
 import { mensagemEscopo, requireTenant } from "@/lib/db/scoped";
 import { derivarDoDiagnostico } from "@/lib/dores/derivarDoDiagnostico";
 import { servicosRecomendados } from "@/lib/proposta/servicos";
@@ -42,12 +43,9 @@ export async function gerarPropostaAction(
     return { kind: "erro", mensagem: "Input inválido" };
   }
 
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return { kind: "erro", mensagem: "ANTHROPIC_API_KEY não configurada" };
-  }
-
   try {
     const { userId } = await requireTenant();
+    const anthropicKey = await exigirChave(userId, "anthropic");
     const lead = await prisma.lead.findFirst({
       where: { id: parsed.data.lead_id, user_id: userId },
       include: { diagnosticos: { orderBy: { executado_em: "desc" }, take: 1 } },
@@ -74,12 +72,15 @@ export async function gerarPropostaAction(
 
     let proposta: PropostaTexto;
     try {
-      proposta = await gerarPropostaLib({
-        nome: lead.nome,
-        categoria: lead.categoria,
-        dores,
-        servicos,
-      });
+      proposta = await gerarPropostaLib(
+        {
+          nome: lead.nome,
+          categoria: lead.categoria,
+          dores,
+          servicos,
+        },
+        anthropicKey,
+      );
     } catch (e) {
       if (e instanceof PropostaError) {
         return { kind: "erro", mensagem: e.message };

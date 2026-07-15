@@ -3,6 +3,7 @@
 // F013 — avaliação final (Scorecard) do Simulador de Venda.
 // Spec: F013-simulador-de-venda.md. Stateless, não persiste.
 
+import { exigirChave } from "@/lib/chaves";
 import { entradaSchema } from "@/lib/simulador/validacao";
 import { avaliarSimulacao } from "@/lib/simulador/avaliar";
 import { SimuladorError } from "@/lib/simulador/simular";
@@ -16,8 +17,9 @@ export type AvaliarResult =
 export async function avaliarSimulacaoAction(
   input: unknown,
 ): Promise<AvaliarResult> {
+  let userId: string;
   try {
-    await requireTenant();
+    ({ userId } = await requireTenant());
   } catch (e) {
     const escopo = mensagemEscopo(e);
     if (escopo) return { ok: false, erro: escopo };
@@ -27,10 +29,6 @@ export async function avaliarSimulacaoAction(
   const parsed = entradaSchema.safeParse(input);
   if (!parsed.success) return { ok: false, erro: "Input inválido" };
 
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return { ok: false, erro: "ANTHROPIC_API_KEY não configurada" };
-  }
-
   const { cenario, historico } = parsed.data;
   const turnosAluno = historico.filter((t) => t.papel === "aluno").length;
   if (turnosAluno < 2) {
@@ -38,9 +36,16 @@ export async function avaliarSimulacaoAction(
   }
 
   try {
-    const scorecard = await avaliarSimulacao(cenario, historico);
+    const anthropicKey = await exigirChave(userId, "anthropic");
+    const scorecard = await avaliarSimulacao(
+      cenario,
+      historico,
+      anthropicKey,
+    );
     return { ok: true, scorecard };
   } catch (e) {
+    const escopo = mensagemEscopo(e);
+    if (escopo) return { ok: false, erro: escopo };
     if (e instanceof SimuladorError) return { ok: false, erro: e.message };
     return { ok: false, erro: "Falha na avaliação. Tente novamente." };
   }

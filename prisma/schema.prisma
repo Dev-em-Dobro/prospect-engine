@@ -118,12 +118,57 @@ model Outreach {
   @@index([user_id])
 }
 
-// F015 stub — campos cifrados entram na F016.
+// F016 / ADR-009 — chaves BYOK cifradas (AES-256-GCM). Um registro por User.
+enum ChaveApiStatus {
+  faltando
+  configurada
+  invalida
+}
+
 model UserApiKeys {
   id         String   @id @default(cuid())
   user_id    String   @unique
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
+
+  // Google — Places + PageSpeed (mesma chave Cloud).
+  google_ciphertext  Bytes?
+  google_iv          Bytes?
+  google_auth_tag    Bytes?
+  google_key_version Int            @default(1)
+  google_last4       String?
+  google_status      ChaveApiStatus @default(faltando)
+
+  // Anthropic (MVP de IA).
+  anthropic_ciphertext  Bytes?
+  anthropic_iv          Bytes?
+  anthropic_auth_tag    Bytes?
+  anthropic_key_version Int            @default(1)
+  anthropic_last4       String?
+  anthropic_status      ChaveApiStatus @default(faltando)
+
+  // OpenAI / Gemini — só guarda (uso efetivo na F017).
+  openai_ciphertext  Bytes?
+  openai_iv          Bytes?
+  openai_auth_tag    Bytes?
+  openai_key_version Int            @default(1)
+  openai_last4       String?
+  openai_status      ChaveApiStatus @default(faltando)
+
+  gemini_ciphertext  Bytes?
+  gemini_iv          Bytes?
+  gemini_auth_tag    Bytes?
+  gemini_key_version Int            @default(1)
+  gemini_last4       String?
+  gemini_status      ChaveApiStatus @default(faltando)
+
+  // ScreenshotOne — opcional (F008 em serverless).
+  screenshotone_ciphertext  Bytes?
+  screenshotone_iv          Bytes?
+  screenshotone_auth_tag    Bytes?
+  screenshotone_key_version Int            @default(1)
+  screenshotone_last4       String?
+  screenshotone_status      ChaveApiStatus @default(faltando)
 
   user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
 

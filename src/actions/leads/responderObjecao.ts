@@ -6,6 +6,7 @@
 
 import { z } from "zod";
 import { prisma } from "@/lib/db";
+import { exigirChave } from "@/lib/chaves";
 import { mensagemEscopo, requireTenant } from "@/lib/db/scoped";
 import { derivarDoDiagnostico } from "@/lib/dores/derivarDoDiagnostico";
 import {
@@ -44,12 +45,9 @@ export async function responderObjecaoAction(
     };
   }
 
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return { kind: "erro", mensagem: "ANTHROPIC_API_KEY não configurada" };
-  }
-
   try {
     const { userId } = await requireTenant();
+    const anthropicKey = await exigirChave(userId, "anthropic");
     const lead = await prisma.lead.findFirst({
       where: { id: parsed.data.lead_id, user_id: userId },
       include: { diagnosticos: { orderBy: { executado_em: "desc" }, take: 1 } },
@@ -70,12 +68,15 @@ export async function responderObjecaoAction(
 
     let respostas: RespostaObjecao[];
     try {
-      ({ respostas } = await responderObjecaoLib({
-        nome: lead.nome,
-        categoria: lead.categoria,
-        dores,
-        mensagemDoLead: parsed.data.mensagem_do_lead,
-      }));
+      ({ respostas } = await responderObjecaoLib(
+        {
+          nome: lead.nome,
+          categoria: lead.categoria,
+          dores,
+          mensagemDoLead: parsed.data.mensagem_do_lead,
+        },
+        anthropicKey,
+      ));
     } catch (e) {
       if (e instanceof ObjecaoError) {
         return { kind: "erro", mensagem: e.message };

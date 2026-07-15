@@ -58,13 +58,16 @@ const PROPOSTA_FORMAT = jsonSchemaOutputFormat({
 /** Gera a prosa da Proposta (sem preço) para um Lead. */
 export async function gerarProposta(
   ctx: ContextoProposta,
+  apiKey: string,
 ): Promise<PropostaTexto> {
-  // Falha de configuração antes de qualquer chamada (padrão F002/F005).
-  if (!process.env.ANTHROPIC_API_KEY) {
-    throw new PropostaError(0, "ANTHROPIC_API_KEY não configurada");
+  if (!apiKey) {
+    throw new PropostaError(
+      0,
+      "Anthropic (IA) não configurada — configure em /configuracao",
+    );
   }
 
-  const client = new Anthropic();
+  const client = new Anthropic({ apiKey });
 
   try {
     const res = await client.messages.parse({

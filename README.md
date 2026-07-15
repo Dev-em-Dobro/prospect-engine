@@ -5,15 +5,15 @@ estabelecimentos via Google Places, identifica quem tem presença digital
 fraca (sem site, site lento, sem HTTPS), prioriza cada um por um score e
 usa a Claude API pra escrever o texto que inicia a conversa com cada Lead.
 
-Você roda a sua própria instância: crie as suas chaves de API, coloque no
-`.env` e (opcional) personalize a sua empresa/oferta em `src/lib/brand.ts`.
+Multi-tenant (Fase 2): cada aluno faz login e cola as próprias chaves de API
+em `/configuracao` (BYOK). Personalize a oferta em `src/lib/brand.ts`.
 
 Esse texto gerado — pronto pra você enviar por WhatsApp ou e-mail — é o
 que o projeto chama de **Outreach**. É o termo oficial, definido no
 [domain model](./specs/01-domain-model.md), e aparece com esse mesmo
 sentido em todo o código e na interface.
 
-Single-tenant: cada pessoa roda a sua própria instância. Tudo síncrono na Fase 1.
+Row-level multi-tenant por `user_id` (F015). Chaves BYOK cifradas (F016 / ADR-009).
 
 ## Stack
 - Next.js 15 (App Router) + TypeScript estrito
@@ -23,18 +23,18 @@ Single-tenant: cada pessoa roda a sua própria instância. Tudo síncrono na Fas
 
 ## Como rodar localmente
 
-Pré-requisitos: Node 20+, conta no Neon, chaves de API (Claude, Google
-Places, PageSpeed).
+Pré-requisitos: Node 20+, conta no Neon, `BYOK_MASTER_KEY` (e depois as
+chaves do aluno em `/configuracao`).
 
 ```bash
 # instalar dependências (depois que o Next estiver inicializado)
 npm install
 
 # configurar as variáveis de ambiente (copie .env.example → .env e preencha)
-# DATABASE_URL, ANTHROPIC_API_KEY, GOOGLE_PLACES_API_KEY, PAGESPEED_API_KEY
-# F014 auth: BETTER_AUTH_SECRET, BETTER_AUTH_URL, GOOGLE_CLIENT_ID,
-# GOOGLE_CLIENT_SECRET, EMAIL_PROVIDER, EMAIL_FROM / RESEND_SMTP_*
+# DATABASE_URL, BYOK_MASTER_KEY (openssl rand -base64 32)
+# F014 auth: BETTER_AUTH_SECRET, BETTER_AUTH_URL, EMAIL_* / RESEND_SMTP_*
 # (magic link local: npm run mailpit + EMAIL_PROVIDER=mailpit — ver F014)
+# Chaves Google/Anthropic/ScreenshotOne: UI /configuracao (F016), não .env
 # Isolamento multi-tenant (F015): npm run test:e2e:isolamento
 # → screenshots em test-results/isolamento/ (gitignored)
 
@@ -75,8 +75,8 @@ Com o 2FA ativo:
 2. Em **APIs e serviços → Biblioteca**, habilite a **Places API** e a
    **PageSpeed Insights API**.
 3. Em **APIs e serviços → Credenciais**, crie uma **chave de API**.
-4. Copie a chave para `.env` em `GOOGLE_PLACES_API_KEY` e
-   `PAGESPEED_API_KEY`.
+4. Cole a chave em **Configuração** (`/configuracao`) no slot Google
+   (Places + PageSpeed usam a mesma chave).
 
 ## Documentação
 

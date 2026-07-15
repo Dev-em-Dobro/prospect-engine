@@ -5,6 +5,7 @@ import { classificarWebsite } from "@/lib/diagnostico/agregador";
 import { filaDeFollowUp } from "@/lib/followup";
 import { ESTAGIOS_EM_ABERTO } from "@/lib/funil";
 import { demoUrlFor } from "@/lib/demos";
+import { BannerChaves } from "@/components/banner-chaves";
 import { ColetarForm } from "./coletar-form";
 import { GerarOutreachButton } from "./gerar-outreach-button";
 import { LeadRow } from "./lead-row";
@@ -67,6 +68,8 @@ export default async function LeadsPage() {
     });
 
   return (
+    <>
+    <BannerChaves />
     <main className="mx-auto max-w-6xl px-6 py-10">
       <h1 className="text-2xl font-bold tracking-tight">Leads</h1>
       <p className="mt-1 text-sm text-muted">
@@ -175,5 +178,6 @@ export default async function LeadsPage() {
         )}
       </div>
     </main>
+    </>
   );
 }

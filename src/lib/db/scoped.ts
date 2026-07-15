@@ -5,6 +5,8 @@ import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/auth/require-user";
 import type { AuthUser } from "@/lib/auth";
 import { AuthError } from "@/lib/auth/errors";
+import { ChaveAusenteError, ChaveOperacaoError } from "@/lib/chaves/erros";
+import { CifraError } from "@/lib/seguranca/cifra";
 
 export class TenantNotFoundError extends Error {
   constructor(recurso = "Recurso") {
@@ -29,9 +31,15 @@ export async function requireTenant(): Promise<TenantContext> {
   };
 }
 
-/** Mensagem amigável pra AuthError / TenantNotFoundError em Server Actions. */
+/** Mensagem amigável pra auth/tenant/BYOK em Server Actions. */
 export function mensagemEscopo(e: unknown): string | null {
-  if (e instanceof AuthError || e instanceof TenantNotFoundError) {
+  if (
+    e instanceof AuthError ||
+    e instanceof TenantNotFoundError ||
+    e instanceof ChaveAusenteError ||
+    e instanceof ChaveOperacaoError ||
+    e instanceof CifraError
+  ) {
     return e.message;
   }
   return null;

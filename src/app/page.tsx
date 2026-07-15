@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BannerChaves } from "@/components/banner-chaves";
 import { prisma } from "@/lib/db";
 import { requireTenant } from "@/lib/db/scoped";
 import { filaDeFollowUp } from "@/lib/followup";
@@ -82,6 +83,8 @@ export default async function DashboardPage() {
   const followUp = filaDeFollowUp(leads);
 
   return (
+    <>
+    <BannerChaves />
     <main className="mx-auto max-w-6xl px-6 py-8">
       <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
       <p className="mt-1 text-sm text-muted">
@@ -305,5 +308,6 @@ export default async function DashboardPage() {
         </section>
       </div>
     </main>
+    </>
   );
 }

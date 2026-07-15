@@ -4,6 +4,7 @@
 // Spec: F008-diagnostico-ux-ia.md
 
 import { z } from "zod";
+import { exigirChave, obterChave } from "@/lib/chaves";
 import { mensagemEscopo, requireLeadOwned } from "@/lib/db/scoped";
 import {
   capturarScreenshots,
@@ -33,18 +34,11 @@ export async function diagnosticarUxAction(
     return { kind: "erro", mensagem: "Input inválido" };
   }
 
-  // AC4: falha de configuração detectada antes de qualquer chamada.
-  // (Screenshot não exige env: Playwright local é o provider default — ADR-006.)
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return { kind: "erro", mensagem: "ANTHROPIC_API_KEY não configurada" };
-  }
-
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return { kind: "erro", mensagem: "ANTHROPIC_API_KEY não configurada" };
-  }
-
   try {
-    const { lead } = await requireLeadOwned(parsed.data.lead_id);
+    const { lead, userId } = await requireLeadOwned(parsed.data.lead_id);
+    const anthropicKey = await exigirChave(userId, "anthropic");
+    const screenshotKey = await obterChave(userId, "screenshotone");
+
     if (!lead.website) {
       return {
         kind: "erro",
@@ -52,14 +46,20 @@ export async function diagnosticarUxAction(
       };
     }
 
-    const { desktopB64, mobileB64 } = await capturarScreenshots(lead.website);
+    const { desktopB64, mobileB64 } = await capturarScreenshots(
+      lead.website,
+      screenshotKey,
+    );
 
-    const analise = await analisarUx({
-      nome: lead.nome,
-      categoria: lead.categoria,
-      desktopB64,
-      mobileB64,
-    });
+    const analise = await analisarUx(
+      {
+        nome: lead.nome,
+        categoria: lead.categoria,
+        desktopB64,
+        mobileB64,
+      },
+      anthropicKey,
+    );
 
     return { kind: "ok", analise };
   } catch (e) {

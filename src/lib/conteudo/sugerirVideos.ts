@@ -45,12 +45,18 @@ const IDEIAS_FORMAT = jsonSchemaOutputFormat({
 });
 
 /** Gera Ideias de Vídeo-Funil a partir de um tema. */
-export async function sugerirVideos(tema: string): Promise<IdeiaVideo[]> {
-  if (!process.env.ANTHROPIC_API_KEY) {
-    throw new ConteudoError(0, "ANTHROPIC_API_KEY não configurada");
+export async function sugerirVideos(
+  tema: string,
+  apiKey: string,
+): Promise<IdeiaVideo[]> {
+  if (!apiKey) {
+    throw new ConteudoError(
+      0,
+      "Anthropic (IA) não configurada — configure em /configuracao",
+    );
   }
 
-  const client = new Anthropic();
+  const client = new Anthropic({ apiKey });
 
   try {
     const res = await client.messages.parse({

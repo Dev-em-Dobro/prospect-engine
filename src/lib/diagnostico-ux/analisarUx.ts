@@ -67,12 +67,17 @@ Sua análise vira um diagnóstico gratuito enviado ao dono do negócio. Regras:
 - "pontos_positivos": até 3, sinceros (lista vazia se não houver).`;
 
 /** Analisa os screenshots do site de um Lead e retorna o diagnóstico de UX. */
-export async function analisarUx(ctx: ContextoAnalise): Promise<AnaliseUx> {
-  if (!process.env.ANTHROPIC_API_KEY) {
-    throw new AnaliseUxError("ANTHROPIC_API_KEY não configurada");
+export async function analisarUx(
+  ctx: ContextoAnalise,
+  apiKey: string,
+): Promise<AnaliseUx> {
+  if (!apiKey) {
+    throw new AnaliseUxError(
+      "Anthropic (IA) não configurada — configure em /configuracao",
+    );
   }
 
-  const client = new Anthropic();
+  const client = new Anthropic({ apiKey });
 
   try {
     const res = await client.messages.parse({

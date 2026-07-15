@@ -33,14 +33,17 @@ const OUTREACH_FORMAT = jsonSchemaOutputFormat({
 /** Gera a mensagem de Outreach de WhatsApp para um Lead. */
 export async function gerarOutreach(
   ctx: ContextoLead,
+  apiKey: string,
   tipo: TipoOutreach = "primeira",
 ): Promise<{ mensagem: string }> {
-  // Falha de configuração antes de qualquer chamada (padrão F001/F002).
-  if (!process.env.ANTHROPIC_API_KEY) {
-    throw new OutreachError(0, "ANTHROPIC_API_KEY não configurada");
+  if (!apiKey) {
+    throw new OutreachError(
+      0,
+      "Anthropic (IA) não configurada — configure em /configuracao",
+    );
   }
 
-  const client = new Anthropic();
+  const client = new Anthropic({ apiKey });
 
   try {
     const res = await client.messages.parse({
