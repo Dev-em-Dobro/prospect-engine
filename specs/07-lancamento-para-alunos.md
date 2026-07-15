@@ -154,11 +154,12 @@ Agora há **usuários externos + chaves + dados** — o risco muda de patamar.
       app/DB). Custo de API é BYOK, mas compute/DB é nosso. (fast-follow)
 
 ## 9. Dívida técnica / polish
-- [ ] **Fix arredondamento da faixa de preço (F012)** — `1500×1,15` dá
-      `1724,999…` em ponto flutuante e a faixa sai `R$ 1.700` em vez de `R$ 1.750`.
-      Arredondar o produto antes do `/50` em `src/lib/proposta/precos.ts`. (P)
-- [ ] Testes automatizados (as libs puras — score, precos, servicos — são fáceis
-      de cobrir; hoje não há runner de teste no projeto).
+- [x] **Fix arredondamento da faixa de preço (F012)** — `arredondar50` arredonda
+      o float antes do `/50` (`src/lib/proposta/precos.ts`); regressão coberta em
+      `tests/unit/proposta.test.ts`.
+- [x] Testes automatizados unitários — **Vitest** ([ADR-012](04-decisions/ADR-012-vitest-unitarios.md)):
+      `npm test` cobre score, precos/servicos, cifra BYOK, máscara, mensagemEscopo,
+      secrets (`tests/unit/`). E2E de isolamento F015 permanece separado.
 - [ ] Observabilidade mínima (erros/uso) e tratamento de erro consistente.
 - [ ] Persistência opcional de F007 (Ideias de Vídeo) e F008 (Diagnóstico UX) —
       hoje deferidas; avaliar se entram no produto pro aluno.

@@ -37,6 +37,8 @@ npm install
 # Chaves Google/Anthropic/ScreenshotOne: UI /configuracao (F016), não .env
 # Isolamento multi-tenant (F015): npm run test:e2e:isolamento
 # → screenshots em test-results/isolamento/ (gitignored)
+# Unitários (ADR-012): npm test
+# Coverage das libs: npm run test:coverage
 
 # (opcional) personalizar a sua empresa/oferta nas mensagens: src/lib/brand.ts
 
@@ -102,6 +104,22 @@ Checklist mínimo para colocar o app no ar para alunos:
    na Vercel + HTTPS assim que o nome for definido.
 
 Variáveis de referência: [`.env.example`](./.env.example).
+
+## Testes
+
+```bash
+# Libs puras (Vitest) — score, proposta, cifra, secrets…
+npm test
+
+# Coverage em src/lib (~50% stmts; I/O com mock; LLM/features IA ainda baixas)
+npm run test:coverage
+
+# Watch
+npm run test:watch
+
+# E2E isolamento multi-tenant (F015) — precisa app + Neon + Chromium
+npm run test:e2e:isolamento
+```
 
 ## Documentação
 
