@@ -45,7 +45,8 @@ dentro da lib):
 
 ## Onboarding
 Se faltam chaves essenciais, guiar o aluno pro `/configuracao` (banner + empty
-state explicativo). Reaproveitar o tutorial existente do Google Places.
+state explicativo). Reaproveitar o tutorial existente do Google Places
+(`docs/tutorial-google-places.md` + rota in-app `/configuracao/tutorial-google`).
 
 ## Critérios de aceitação
 - [x] **AC1** — Salvar uma chave grava em `UserApiKeys` **cifrada** (ADR-009);
@@ -62,6 +63,8 @@ state explicativo). Reaproveitar o tutorial existente do Google Places.
       orientação clara (ADR-006); presente → usa o provider externo.
 - [x] **AC7** — Editar/remover uma chave atualiza o status e o comportamento das
       features na hora.
+- [x] **AC8** — Sem chaves essenciais: banner + empty states apontam pra
+      `/configuracao` (e tutorial Google quando faltar Places).
 
 ## Decisões de implementação
 - `src/lib/seguranca/cifra.ts` (ADR-009) para cifrar/decifrar.

@@ -85,9 +85,17 @@ export function LoginForm({ googleEnabled }: { googleEnabled: boolean }) {
     return (
       <div className="space-y-4">
         <div className="alert-ok" role="status">
-          Enviamos um link para <strong>{estado.email}</strong>. Abra o e-mail e
-          clique no link para entrar.
+          <p className="font-medium">Link enviado</p>
+          <p className="mt-1">
+            Enviamos um link para <strong>{estado.email}</strong>. Abra o e-mail
+            e clique no link para entrar. O link expira em breve e só pode ser
+            usado uma vez.
+          </p>
         </div>
+        <p className="text-xs text-zinc-500">
+          Não chegou? Confira spam/lixo eletrônico ou aguarde um minuto e
+          solicite de novo.
+        </p>
         <button
           type="button"
           className="btn-ghost"

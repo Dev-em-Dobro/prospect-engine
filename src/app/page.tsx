@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { BannerChaves } from "@/components/banner-chaves";
+import { EmptyState } from "@/components/empty-state";
+import { chavesEssenciaisFaltando } from "@/lib/chaves";
 import { prisma } from "@/lib/db";
 import { requireTenant } from "@/lib/db/scoped";
 import { filaDeFollowUp } from "@/lib/followup";
@@ -26,18 +28,22 @@ const LABEL: Record<LeadStatus, string> = Object.fromEntries(
 ) as Record<LeadStatus, string>;
 
 export default async function DashboardPage() {
-  const { whereUser } = await requireTenant();
-  const leads = await prisma.lead.findMany({
-    where: whereUser,
-    orderBy: { score: "desc" },
-    include: {
-      outreaches: {
-        where: { enviado: true },
-        orderBy: { enviado_em: "desc" },
-        take: 1,
+  const { whereUser, userId } = await requireTenant();
+  const [leads, faltandoChaves] = await Promise.all([
+    prisma.lead.findMany({
+      where: whereUser,
+      orderBy: { score: "desc" },
+      include: {
+        outreaches: {
+          where: { enviado: true },
+          orderBy: { enviado_em: "desc" },
+          take: 1,
+        },
       },
-    },
-  });
+    }),
+    chavesEssenciaisFaltando(userId),
+  ]);
+  const semChaves = faltandoChaves.length > 0;
 
   const porStatus = Object.fromEntries(
     ESTAGIOS.map((e) => [
@@ -97,15 +103,33 @@ export default async function DashboardPage() {
             Funil por estágio
           </h2>
           {leads.length === 0 ? (
-            <p className="mt-4 text-sm text-muted">
-              Nenhum Lead ainda.{" "}
-              <Link
-                href="/leads"
-                className="text-primary hover:text-primary-hover hover:underline"
-              >
-                Coletar os primeiros →
-              </Link>
-            </p>
+            <div className="mt-4">
+              <EmptyState
+                titulo={
+                  semChaves
+                    ? "Configure as chaves pra começar"
+                    : "Nenhum Lead no funil"
+                }
+                descricao={
+                  semChaves
+                    ? "Cole Google + provedor de IA em Configuração. Sem isso a coleta e o Outreach não rodam."
+                    : "Colete os primeiros estabelecimentos em Leads pra encher o funil."
+                }
+                acao={
+                  semChaves
+                    ? { href: "/configuracao", label: "Ir para Configuração" }
+                    : { href: "/leads", label: "Coletar Leads" }
+                }
+                secundaria={
+                  semChaves
+                    ? {
+                        href: "/configuracao/tutorial-google",
+                        label: "Tutorial Google",
+                      }
+                    : undefined
+                }
+              />
+            </div>
           ) : (
             <>
               <div className="mt-5 flex gap-3">
