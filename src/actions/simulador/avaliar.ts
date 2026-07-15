@@ -1,9 +1,8 @@
 "use server";
 
 // F013 — avaliação final (Scorecard) do Simulador de Venda.
-// Spec: F013-simulador-de-venda.md. Stateless, não persiste.
 
-import { exigirChave } from "@/lib/chaves";
+import { createLlmForUser } from "@/lib/llm";
 import { entradaSchema } from "@/lib/simulador/validacao";
 import { avaliarSimulacao } from "@/lib/simulador/avaliar";
 import { SimuladorError } from "@/lib/simulador/simular";
@@ -36,12 +35,8 @@ export async function avaliarSimulacaoAction(
   }
 
   try {
-    const anthropicKey = await exigirChave(userId, "anthropic");
-    const scorecard = await avaliarSimulacao(
-      cenario,
-      historico,
-      anthropicKey,
-    );
+    const llm = await createLlmForUser(userId);
+    const scorecard = await avaliarSimulacao(cenario, historico, llm);
     return { ok: true, scorecard };
   } catch (e) {
     const escopo = mensagemEscopo(e);

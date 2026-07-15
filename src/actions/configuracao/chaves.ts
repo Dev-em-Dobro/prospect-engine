@@ -14,6 +14,7 @@ import {
   type TipoChave,
   type VisaoChave,
 } from "@/lib/chaves";
+import { LABEL_LLM_PROVIDER, salvarProviderLlm } from "@/lib/llm";
 import { mensagemEscopo, requireTenant } from "@/lib/db/scoped";
 
 const tipoSchema = z.enum(TIPOS_CHAVE);
@@ -110,6 +111,37 @@ export async function testarChaveAction(
     return {
       kind: "erro",
       mensagem: e instanceof Error ? e.message : "Falha ao testar",
+    };
+  }
+}
+
+const providerSchema = z.enum(["anthropic", "openai", "gemini"]);
+
+export async function salvarProviderLlmAction(
+  _prev: ChaveActionState,
+  formData: FormData,
+): Promise<ChaveActionState> {
+  const parsed = providerSchema.safeParse(formData.get("provider"));
+  if (!parsed.success) {
+    return { kind: "erro", mensagem: "Provedor de IA inválido" };
+  }
+
+  try {
+    const { userId } = await requireTenant();
+    const provider = await salvarProviderLlm(userId, parsed.data);
+    revalidatePath("/configuracao");
+    revalidatePath("/");
+    revalidatePath("/leads");
+    return {
+      kind: "ok",
+      mensagem: `Provedor de IA: ${LABEL_LLM_PROVIDER[provider]}`,
+    };
+  } catch (e) {
+    const escopo = mensagemEscopo(e);
+    if (escopo) return { kind: "erro", mensagem: escopo };
+    return {
+      kind: "erro",
+      mensagem: e instanceof Error ? e.message : "Falha ao salvar provedor",
     };
   }
 }

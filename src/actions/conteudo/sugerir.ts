@@ -4,7 +4,7 @@
 // Spec: /specs/02-features/F007-sugestoes-video-funil.md
 
 import { z } from "zod";
-import { exigirChave } from "@/lib/chaves";
+import { createLlmForUser } from "@/lib/llm";
 import { mensagemEscopo, requireTenant } from "@/lib/db/scoped";
 import { sugerirVideos, ConteudoError } from "@/lib/conteudo/sugerirVideos";
 import type { IdeiaVideo } from "@/lib/conteudo/prompt";
@@ -34,8 +34,8 @@ export async function sugerirVideosAction(
 
   try {
     const { userId } = await requireTenant();
-    const anthropicKey = await exigirChave(userId, "anthropic");
-    const ideias = await sugerirVideos(parsed.data.tema, anthropicKey);
+    const llm = await createLlmForUser(userId);
+    const ideias = await sugerirVideos(parsed.data.tema, llm);
     return { kind: "ok", ideias };
   } catch (e) {
     const escopo = mensagemEscopo(e);

@@ -6,6 +6,7 @@ import { requireUser } from "@/lib/auth/require-user";
 import type { AuthUser } from "@/lib/auth";
 import { AuthError } from "@/lib/auth/errors";
 import { ChaveAusenteError, ChaveOperacaoError } from "@/lib/chaves/erros";
+import { LlmError } from "@/lib/llm/erros";
 import { CifraError } from "@/lib/seguranca/cifra";
 
 export class TenantNotFoundError extends Error {
@@ -38,7 +39,8 @@ export function mensagemEscopo(e: unknown): string | null {
     e instanceof TenantNotFoundError ||
     e instanceof ChaveAusenteError ||
     e instanceof ChaveOperacaoError ||
-    e instanceof CifraError
+    e instanceof CifraError ||
+    e instanceof LlmError
   ) {
     return e.message;
   }

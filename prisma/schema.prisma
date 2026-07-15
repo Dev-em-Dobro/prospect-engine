@@ -125,11 +125,20 @@ enum ChaveApiStatus {
   invalida
 }
 
+enum LlmProvider {
+  anthropic
+  openai
+  gemini
+}
+
 model UserApiKeys {
   id         String   @id @default(cuid())
   user_id    String   @unique
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
+
+  // Provedor de IA ativo nas features (F017). Default Anthropic.
+  llm_provider LlmProvider @default(anthropic)
 
   // Google — Places + PageSpeed (mesma chave Cloud).
   google_ciphertext  Bytes?
@@ -147,7 +156,7 @@ model UserApiKeys {
   anthropic_last4       String?
   anthropic_status      ChaveApiStatus @default(faltando)
 
-  // OpenAI / Gemini — só guarda (uso efetivo na F017).
+  // OpenAI / Gemini — BYOK; uso efetivo via llm_provider (F017).
   openai_ciphertext  Bytes?
   openai_iv          Bytes?
   openai_auth_tag    Bytes?

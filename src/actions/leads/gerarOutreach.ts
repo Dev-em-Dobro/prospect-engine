@@ -6,12 +6,12 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { exigirChave } from "@/lib/chaves";
 import { mensagemEscopo, requireTenant } from "@/lib/db/scoped";
 import {
   gerarOutreach as gerarOutreachLib,
   OutreachError,
 } from "@/lib/outreach/gerarOutreach";
+import { createLlmForUser } from "@/lib/llm";
 import type { ContextoLead } from "@/lib/outreach/prompt";
 
 const schema = z.object({
@@ -69,7 +69,7 @@ export async function gerarOutreachAction(
 
   try {
     const { userId } = await requireTenant();
-    const anthropicKey = await exigirChave(userId, "anthropic");
+    const llm = await createLlmForUser(userId);
     const lead = await prisma.lead.findFirst({
       where: { id: parsed.data.lead_id, user_id: userId },
       include: { diagnosticos: { orderBy: { executado_em: "desc" }, take: 1 } },
@@ -95,11 +95,7 @@ export async function gerarOutreachAction(
 
     let mensagem: string;
     try {
-      ({ mensagem } = await gerarOutreachLib(
-        ctx,
-        anthropicKey,
-        parsed.data.tipo,
-      ));
+      ({ mensagem } = await gerarOutreachLib(ctx, llm, parsed.data.tipo));
     } catch (e) {
       if (e instanceof OutreachError) {
         return { kind: "erro", mensagem: e.message };

@@ -1,10 +1,8 @@
 "use server";
 
 // F013 — uma rodada do Simulador de Venda. Spec: F013-simulador-de-venda.md.
-// Stateless: recebe cenário + histórico do client, devolve a fala do dono.
-// Não persiste nada.
 
-import { exigirChave } from "@/lib/chaves";
+import { createLlmForUser } from "@/lib/llm";
 import { entradaSchema } from "@/lib/simulador/validacao";
 import { simularTurno, SimuladorError } from "@/lib/simulador/simular";
 import { mensagemEscopo, requireTenant } from "@/lib/db/scoped";
@@ -35,8 +33,8 @@ export async function responderTurnoAction(
   }
 
   try {
-    const anthropicKey = await exigirChave(userId, "anthropic");
-    const { mensagem } = await simularTurno(cenario, historico, anthropicKey);
+    const llm = await createLlmForUser(userId);
+    const { mensagem } = await simularTurno(cenario, historico, llm);
     return { ok: true, mensagem };
   } catch (e) {
     const escopo = mensagemEscopo(e);

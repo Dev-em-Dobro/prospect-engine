@@ -34,18 +34,28 @@ export async function listarVisaoChaves(userId: string): Promise<VisaoChave[]> {
   }));
 }
 
-/** Essenciais faltando — pra banner/empty state. */
+/** Essenciais faltando — Google + chave do provedor de IA ativo. */
 export async function chavesEssenciaisFaltando(
   userId: string,
 ): Promise<TipoChave[]> {
   const visao = await listarVisaoChaves(userId);
-  return visao
-    .filter(
-      (v) =>
-        (v.tipo === "google" || v.tipo === "anthropic") &&
-        v.status === "faltando",
-    )
-    .map((v) => v.tipo);
+  const faltando: TipoChave[] = [];
+
+  const google = visao.find((v) => v.tipo === "google");
+  if (!google || google.status === "faltando") faltando.push("google");
+
+  const rows = await prisma.$queryRaw<{ llm_provider: string }[]>`
+    SELECT "llm_provider" FROM "user_api_keys" WHERE "user_id" = ${userId} LIMIT 1
+  `;
+  const slotIa = (rows[0]?.llm_provider ?? "anthropic") as TipoChave;
+  const ia = visao.find((v) => v.tipo === slotIa);
+  if (!ia || ia.status === "faltando") {
+    if (slotIa === "anthropic" || slotIa === "openai" || slotIa === "gemini") {
+      faltando.push(slotIa);
+    }
+  }
+
+  return faltando;
 }
 
 /** Salva (cifra) uma chave. Retorna visão atualizada do slot. */

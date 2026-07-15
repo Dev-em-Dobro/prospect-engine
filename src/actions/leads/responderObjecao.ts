@@ -6,7 +6,7 @@
 
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { exigirChave } from "@/lib/chaves";
+import { createLlmForUser } from "@/lib/llm";
 import { mensagemEscopo, requireTenant } from "@/lib/db/scoped";
 import { derivarDoDiagnostico } from "@/lib/dores/derivarDoDiagnostico";
 import {
@@ -47,7 +47,7 @@ export async function responderObjecaoAction(
 
   try {
     const { userId } = await requireTenant();
-    const anthropicKey = await exigirChave(userId, "anthropic");
+    const llm = await createLlmForUser(userId);
     const lead = await prisma.lead.findFirst({
       where: { id: parsed.data.lead_id, user_id: userId },
       include: { diagnosticos: { orderBy: { executado_em: "desc" }, take: 1 } },
@@ -75,7 +75,7 @@ export async function responderObjecaoAction(
           dores,
           mensagemDoLead: parsed.data.mensagem_do_lead,
         },
-        anthropicKey,
+        llm,
       ));
     } catch (e) {
       if (e instanceof ObjecaoError) {

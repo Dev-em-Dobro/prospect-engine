@@ -4,7 +4,8 @@
 // Spec: F008-diagnostico-ux-ia.md
 
 import { z } from "zod";
-import { exigirChave, obterChave } from "@/lib/chaves";
+import { obterChave } from "@/lib/chaves";
+import { createLlmForUser } from "@/lib/llm";
 import { mensagemEscopo, requireLeadOwned } from "@/lib/db/scoped";
 import {
   capturarScreenshots,
@@ -36,7 +37,7 @@ export async function diagnosticarUxAction(
 
   try {
     const { lead, userId } = await requireLeadOwned(parsed.data.lead_id);
-    const anthropicKey = await exigirChave(userId, "anthropic");
+    const llm = await createLlmForUser(userId);
     const screenshotKey = await obterChave(userId, "screenshotone");
 
     if (!lead.website) {
@@ -58,7 +59,7 @@ export async function diagnosticarUxAction(
         desktopB64,
         mobileB64,
       },
-      anthropicKey,
+      llm,
     );
 
     return { kind: "ok", analise };

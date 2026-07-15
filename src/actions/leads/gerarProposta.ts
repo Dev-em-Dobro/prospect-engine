@@ -6,7 +6,7 @@
 // status nem persiste: a promoção a `proposta` é o botão "Proposta" existente
 // (registrarDesfecho, F006/F010).
 
-import { exigirChave } from "@/lib/chaves";
+import { createLlmForUser } from "@/lib/llm";
 import { mensagemEscopo, requireTenant } from "@/lib/db/scoped";
 import { derivarDoDiagnostico } from "@/lib/dores/derivarDoDiagnostico";
 import { servicosRecomendados } from "@/lib/proposta/servicos";
@@ -45,7 +45,7 @@ export async function gerarPropostaAction(
 
   try {
     const { userId } = await requireTenant();
-    const anthropicKey = await exigirChave(userId, "anthropic");
+    const llm = await createLlmForUser(userId);
     const lead = await prisma.lead.findFirst({
       where: { id: parsed.data.lead_id, user_id: userId },
       include: { diagnosticos: { orderBy: { executado_em: "desc" }, take: 1 } },
@@ -79,7 +79,7 @@ export async function gerarPropostaAction(
           dores,
           servicos,
         },
-        anthropicKey,
+        llm,
       );
     } catch (e) {
       if (e instanceof PropostaError) {
