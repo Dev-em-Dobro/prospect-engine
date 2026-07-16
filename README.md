@@ -111,7 +111,7 @@ Variáveis de referência: [`.env.example`](./.env.example).
 # Libs puras (Vitest) — score, proposta, cifra, secrets…
 npm test
 
-# Coverage em src/lib (~50% stmts; I/O com mock; LLM/features IA ainda baixas)
+# Coverage em src/lib (~83% stmts)
 npm run test:coverage
 
 # Watch
