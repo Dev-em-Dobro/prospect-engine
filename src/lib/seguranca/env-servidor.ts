@@ -1,7 +1,7 @@
 // Secrets críticos do servidor (deploy / ADR-009 / F014).
 // Ausência ou formato inválido → falha explícita (boot + /api/health).
-
-import { createHash } from "node:crypto";
+// Sem `node:crypto` / `Buffer` — este módulo é importado pelo instrumentation
+// (webpack Edge não aceita o scheme `node:`).
 
 export type SecretCheck = {
   ok: boolean;
@@ -12,6 +12,12 @@ export type SecretCheck = {
 function presente(name: string): string | null {
   const v = process.env[name]?.trim();
   return v || null;
+}
+
+/** Comprimento em bytes de um base64 (sem Node Buffer). */
+function base64ByteLength(b64: string): number {
+  const bin = atob(b64.replace(/\s/g, ""));
+  return bin.length;
 }
 
 /** Valida BYOK_MASTER_KEY (32 bytes em base64). */
@@ -25,12 +31,12 @@ export function checkByokMasterKey(): SecretCheck {
     };
   }
   try {
-    const buf = Buffer.from(raw, "base64");
-    if (buf.length !== 32) {
+    const len = base64ByteLength(raw);
+    if (len !== 32) {
       return {
         ok: false,
         name: "BYOK_MASTER_KEY",
-        detalhe: `inválida — decodificou ${buf.length} bytes (esperado 32)`,
+        detalhe: `inválida — decodificou ${len} bytes (esperado 32)`,
       };
     }
   } catch {
@@ -119,9 +125,14 @@ export function assertCriticalSecrets(): void {
   );
 }
 
-/** Fingerprint não-sensível (só health) — nunca o valor. */
+/** Fingerprint não-sensível (só health) — FNV-1a, não é crypto. */
 export function fingerprintEnv(name: string): string | null {
   const raw = presente(name);
   if (!raw) return null;
-  return createHash("sha256").update(raw).digest("hex").slice(0, 8);
+  let h = 0x811c9dc5;
+  for (let i = 0; i < raw.length; i++) {
+    h ^= raw.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return (h >>> 0).toString(16).padStart(8, "0");
 }
