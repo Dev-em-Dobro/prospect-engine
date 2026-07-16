@@ -74,7 +74,8 @@ export function checkBetterAuthUrl(): SecretCheck {
     return {
       ok: false,
       name: "BETTER_AUTH_URL",
-      detalhe: "ausente — URL pública do app (ex.: https://prospeccao.exemplo.com)",
+      detalhe:
+        "ausente — URL pública do app (ex.: https://orion-lead-hunter.devemdobro.com)",
     };
   }
   try {

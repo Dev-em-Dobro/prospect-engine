@@ -85,26 +85,27 @@ Com o 2FA ativo:
 Checklist mínimo para colocar o app no ar para alunos:
 
 1. **Neon de produção** — projeto/branch de prod; `DATABASE_URL` na Vercel.
-2. **Migrar** — `npx prisma migrate deploy` (CI ou one-shot pós-deploy).
-3. **Secrets do servidor** (Vercel → Environment Variables) — **sem default**;
+   Migrations do banco principal já aplicadas (`prisma migrate deploy`).
+   Backups: painel Neon.
+2. **Secrets do servidor** (Vercel → Environment Variables) — **sem default**;
    ausência falha no boot e em `/api/health` (503):
    - `BYOK_MASTER_KEY` — `openssl rand -base64 32` (ADR-009 / F016)
    - `BETTER_AUTH_SECRET` — `openssl rand -base64 32` (F014)
-   - `BETTER_AUTH_URL` — URL pública (ex.: `https://seu-dominio.com`)
+   - `BETTER_AUTH_URL` — `https://orion-lead-hunter.devemdobro.com`
    - `DATABASE_URL`
    - E-mail do magic link (`EMAIL_PROVIDER=resend` + vars Resend)
    - Google OAuth (opcional): `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET`
-4. **Health** — `GET /api/health` deve retornar `{"ok":true}` (secrets + `SELECT 1`).
-5. **Sentry (ADR-013)** — `SENTRY_DSN` + `NEXT_PUBLIC_SENTRY_DSN` (mesmo valor).
+3. **Health** — `GET /api/health` deve retornar `{"ok":true}` (secrets + `SELECT 1`).
+4. **Sentry (ADR-013)** — `SENTRY_DSN` + `NEXT_PUBLIC_SENTRY_DSN` (mesmo valor).
    Sem DSN o app sobe normalmente (no-op). Opcional: `SENTRY_AUTH_TOKEN` /
    `SENTRY_ORG` / `SENTRY_PROJECT` pra source maps no build.
-6. **F008 em serverless** — Playwright não roda na Vercel; o aluno precisa da
+5. **F008 em serverless** — Playwright não roda na Vercel; o aluno precisa da
    chave **ScreenshotOne** em `/configuracao` (BYOK). Já implementado em
    `src/lib/diagnostico-ux/screenshot.ts` (ADR-006).
-7. **Páginas legais** — `/termos` e `/privacidade` (LGPD); e-mail em
+6. **Páginas legais** — `/termos` e `/privacidade` (LGPD); e-mail em
    `src/lib/legal.ts`.
-8. **Domínio** — ainda aberto (ver `specs/07-lancamento-para-alunos.md`); DNS
-   na Vercel + HTTPS assim que o nome for definido.
+7. **Domínio** — `https://orion-lead-hunter.devemdobro.com` (Cloudflare DNS +
+   Vercel). Conferir `BETTER_AUTH_URL` e redirect OAuth/magic link nessa URL.
 
 Variáveis de referência: [`.env.example`](./.env.example).
 

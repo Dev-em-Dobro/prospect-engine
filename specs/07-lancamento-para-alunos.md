@@ -133,12 +133,14 @@ Redesign pra cara de produto (hoje é dashboard funcional interna).
 - [x] Hospedagem **Vercel** — F008: Playwright local; em prod (serverless)
       ScreenshotOne via BYOK (ADR-006 / F016). Código: `screenshot.ts` + aviso
       em `/configuracao`. Health: `GET /api/health`.
-- [ ] Neon de produção + `prisma migrate deploy` no pipeline; backups.
-      (Checklist operacional no `README.md` § Deploy.)
+- [x] Neon de produção + `prisma migrate deploy` — migrations aplicadas no banco
+      principal (ops). Backups seguem no Neon. Checklist no `README.md` § Deploy.
 - [x] Secrets do servidor sem default — `BYOK_MASTER_KEY`, `BETTER_AUTH_SECRET`,
       `BETTER_AUTH_URL`, `DATABASE_URL` validados no boot (`instrumentation.ts` +
       `src/lib/seguranca/env-servidor.ts`) e em `/api/health` (503 se faltar).
-- [ ] **Comprar / confirmar o domínio final** (ainda aberto) + DNS + HTTPS.
+- [x] **Domínio de produção** — `orion-lead-hunter.devemdobro.com` (DNS Cloudflare
+      + Vercel, HTTPS). `BETTER_AUTH_URL` em prod deve apontar para
+      `https://orion-lead-hunter.devemdobro.com`.
 - [x] `.vercelignore` existe; vars documentadas em `.env.example` + README.
 
 ## 8. Segurança / LGPD / legal
@@ -196,11 +198,14 @@ Agora há **usuários externos + chaves + dados** — o risco muda de patamar.
   ~200 diagnósticos/dia, ~100 gerações LLM/dia. Monitorar no PostHog e afrouxar
   conforme o uso real.
 
+### 2026-07-15
+- **Domínio:** subdomínio Dev em Dobro
+  **`https://orion-lead-hunter.devemdobro.com`** — DNS na Cloudflare, app na
+  Vercel (HTTPS). Produção: `BETTER_AUTH_URL` = essa URL (sem barra no fim).
+
 ## Decisões em aberto (precisam da sua definição)
-1. **Domínio — nome:** recomendado **subdomínio de um domínio Dev em Dobro
-   existente** (ex.: `prospeccao.devemdobro.com`), DNS na Vercel, titularidade do
-   registrar com você. Falta confirmar o domínio/subdomínio (ou optar por um
-   domínio dedicado, se quiser marca própria). Define também `src/lib/brand.ts`.
+_Nenhuma no momento._ (Marca/oferta em `src/lib/brand.ts` continua editável
+pelo operador; não bloqueia o domínio.)
 
 ## MVP — caminho crítico (o mínimo pra abrir)
 Ordem sugerida (bloqueadores primeiro):
