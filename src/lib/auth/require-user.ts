@@ -4,6 +4,7 @@
 import { headers } from "next/headers";
 import { auth, type AuthUser } from "./index";
 import { AuthError } from "./errors";
+import { setSentryUser } from "@/lib/observabilidade";
 
 /**
  * Devolve o usuário da sessão atual ou lança `AuthError`.
@@ -15,8 +16,10 @@ export async function requireUser(): Promise<AuthUser> {
   });
 
   if (!session?.user) {
+    setSentryUser(null);
     throw new AuthError("Sessão necessária. Faça login para continuar.");
   }
 
+  setSentryUser(session.user.id);
   return session.user;
 }

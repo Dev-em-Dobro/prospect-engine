@@ -1,5 +1,6 @@
 import path from "node:path";
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
   outputFileTracingRoot: path.resolve(__dirname),
@@ -8,4 +9,14 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ["playwright"],
 };
 
-export default nextConfig;
+// ADR-013 — wrap Sentry. Sem SENTRY_AUTH_TOKEN ⇒ dryRun (sem upload de maps).
+export default withSentryConfig(nextConfig, {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  silent: true,
+  dryRun: !process.env.SENTRY_AUTH_TOKEN,
+  widenClientFileUpload: true,
+  disableLogger: true,
+  automaticVercelMonitors: false,
+});

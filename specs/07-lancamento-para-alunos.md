@@ -160,7 +160,10 @@ Agora há **usuários externos + chaves + dados** — o risco muda de patamar.
 - [x] Testes automatizados unitários — **Vitest** ([ADR-012](04-decisions/ADR-012-vitest-unitarios.md)):
       `npm test` cobre score, precos/servicos, cifra BYOK, máscara, mensagemEscopo,
       secrets (`tests/unit/`). E2E de isolamento F015 permanece separado.
-- [ ] Observabilidade mínima (erros/uso) e tratamento de erro consistente.
+- [x] Observabilidade mínima de **erros** — Sentry (`@sentry/nextjs`,
+      [ADR-013](04-decisions/ADR-013-observabilidade.md)): client + server,
+      `error.tsx` / `global-error.tsx`, `reportarErro` / `setSentryUser`. Sem DSN
+      ⇒ no-op. PostHog (uso/quotas) fica fast-follow.
 - [ ] Persistência opcional de F007 (Ideias de Vídeo) e F008 (Diagnóstico UX) —
       hoje deferidas; avaliar se entram no produto pro aluno.
 

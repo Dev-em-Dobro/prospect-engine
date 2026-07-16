@@ -1,10 +1,16 @@
-// Boot do Node — valida secrets críticos antes de servir tráfego.
-// Next.js chama `register` automaticamente (instrumentation).
+// Boot: secrets críticos + Sentry (ADR-013).
+
+import * as Sentry from "@sentry/nextjs";
 
 export async function register() {
+  if (process.env.NEXT_RUNTIME === "nodejs") {
+    await import("./sentry.server.config");
+  }
+  if (process.env.NEXT_RUNTIME === "edge") {
+    await import("./sentry.edge.config");
+  }
+
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
-  // Evita falhar o `next build` quando o ambiente de CI ainda não tem secrets;
-  // em runtime (dev/prod) e no /api/health a checagem é obrigatória.
   if (process.env.NEXT_PHASE === "phase-production-build") return;
 
   const { assertCriticalSecrets } = await import(
@@ -12,3 +18,5 @@ export async function register() {
   );
   assertCriticalSecrets();
 }
+
+export const onRequestError = Sentry.captureRequestError;

@@ -95,12 +95,15 @@ Checklist mínimo para colocar o app no ar para alunos:
    - E-mail do magic link (`EMAIL_PROVIDER=resend` + vars Resend)
    - Google OAuth (opcional): `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET`
 4. **Health** — `GET /api/health` deve retornar `{"ok":true}` (secrets + `SELECT 1`).
-5. **F008 em serverless** — Playwright não roda na Vercel; o aluno precisa da
+5. **Sentry (ADR-013)** — `SENTRY_DSN` + `NEXT_PUBLIC_SENTRY_DSN` (mesmo valor).
+   Sem DSN o app sobe normalmente (no-op). Opcional: `SENTRY_AUTH_TOKEN` /
+   `SENTRY_ORG` / `SENTRY_PROJECT` pra source maps no build.
+6. **F008 em serverless** — Playwright não roda na Vercel; o aluno precisa da
    chave **ScreenshotOne** em `/configuracao` (BYOK). Já implementado em
    `src/lib/diagnostico-ux/screenshot.ts` (ADR-006).
-6. **Páginas legais** — `/termos` e `/privacidade` (LGPD); e-mail em
+7. **Páginas legais** — `/termos` e `/privacidade` (LGPD); e-mail em
    `src/lib/legal.ts`.
-7. **Domínio** — ainda aberto (ver `specs/07-lancamento-para-alunos.md`); DNS
+8. **Domínio** — ainda aberto (ver `specs/07-lancamento-para-alunos.md`); DNS
    na Vercel + HTTPS assim que o nome for definido.
 
 Variáveis de referência: [`.env.example`](./.env.example).
