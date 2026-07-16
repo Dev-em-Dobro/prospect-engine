@@ -15,3 +15,6 @@ Sentry.init({
   sendDefaultPii: false,
   beforeSend: beforeSendScrub,
 });
+
+// Exigido pelo SDK (@sentry/nextjs) mesmo com tracing desligado no beta.
+export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;
