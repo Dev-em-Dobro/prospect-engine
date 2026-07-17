@@ -9,13 +9,21 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ["playwright"],
 };
 
-// ADR-013 — wrap Sentry. Sem SENTRY_AUTH_TOKEN ⇒ dryRun (sem upload de maps).
+const temAuthToken = Boolean(process.env.SENTRY_AUTH_TOKEN?.trim());
+
+// ADR-013 — wrap Sentry. Sem SENTRY_AUTH_TOKEN ⇒ sem upload de source maps
+// (`dryRun` foi removido do SentryBuildOptions; usar `sourcemaps.disable`).
 export default withSentryConfig(nextConfig, {
   org: process.env.SENTRY_ORG,
   project: process.env.SENTRY_PROJECT,
   authToken: process.env.SENTRY_AUTH_TOKEN,
   silent: true,
-  dryRun: !process.env.SENTRY_AUTH_TOKEN,
+  sourcemaps: {
+    disable: !temAuthToken,
+  },
+  release: {
+    create: temAuthToken,
+  },
   widenClientFileUpload: true,
   webpack: {
     treeshake: {
