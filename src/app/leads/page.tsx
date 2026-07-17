@@ -12,11 +12,16 @@ import { ColetarForm } from "./coletar-form";
 import { GerarOutreachButton } from "./gerar-outreach-button";
 import { LeadRow } from "./lead-row";
 import {
-  FiltroCategoria,
+  FiltrosLista,
   PAGE_SIZE,
   PaginacaoLeads,
 } from "./lista-controles";
 import { linkWhatsapp } from "./ui";
+import {
+  parseFiltroSite,
+  ROTULO_FILTRO_SITE,
+  whereFiltroSite,
+} from "@/lib/leads/filtroSite";
 
 // Sempre reflete o banco do aluno logado (F015) — sem cache cross-tenant.
 export const dynamic = "force-dynamic";
@@ -26,7 +31,11 @@ const fmtData = new Intl.DateTimeFormat("pt-BR", {
   timeStyle: "short",
 });
 
-type SearchParams = Promise<{ categoria?: string; page?: string }>;
+type SearchParams = Promise<{
+  categoria?: string;
+  site?: string;
+  page?: string;
+}>;
 
 export default async function LeadsPage({
   searchParams,
@@ -35,6 +44,7 @@ export default async function LeadsPage({
 }) {
   const params = await searchParams;
   const categoriaRaw = params.categoria?.trim() ?? "";
+  const siteFiltro = parseFiltroSite(params.site);
 
   const { whereUser, userId } = await requireTenant();
 
@@ -72,11 +82,13 @@ export default async function LeadsPage({
   const whereLista = {
     ...whereUser,
     ...(categoriaValida ? { categoria: categoriaValida } : {}),
+    ...(siteFiltro ? whereFiltroSite(siteFiltro) : {}),
   };
 
-  const total = categoriaValida
-    ? await prisma.lead.count({ where: whereLista })
-    : totalTenant;
+  const total =
+    categoriaValida || siteFiltro
+      ? await prisma.lead.count({ where: whereLista })
+      : totalTenant;
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const pageRaw = Number.parseInt(params.page ?? "1", 10);
@@ -114,8 +126,8 @@ export default async function LeadsPage({
     };
   });
 
-  const semResultadosFiltro =
-    totalTenant > 0 && total === 0 && categoriaValida !== null;
+  const temFiltroAtivo = categoriaValida !== null || siteFiltro !== null;
+  const semResultadosFiltro = totalTenant > 0 && total === 0 && temFiltroAtivo;
 
   return (
     <>
@@ -175,6 +187,12 @@ export default async function LeadsPage({
                     · categoria “{categoriaValida}”
                   </span>
                 ) : null}
+                {siteFiltro ? (
+                  <span className="text-zinc-500">
+                    {" "}
+                    · site “{ROTULO_FILTRO_SITE[siteFiltro]}”
+                  </span>
+                ) : null}
               </p>
               {total > 0 && (
                 <p className="mt-0.5 text-xs text-zinc-500">
@@ -182,10 +200,13 @@ export default async function LeadsPage({
                 </p>
               )}
             </div>
-            <FiltroCategoria
-              categorias={categorias}
-              categoriaAtual={categoriaValida}
-            />
+            {totalTenant > 0 ? (
+              <FiltrosLista
+                categorias={categorias}
+                categoriaAtual={categoriaValida}
+                siteAtual={siteFiltro}
+              />
+            ) : null}
           </div>
 
           {totalTenant === 0 ? (
@@ -213,8 +234,8 @@ export default async function LeadsPage({
           {semResultadosFiltro ? (
             <div className="mt-3">
               <EmptyState
-                titulo="Nenhum Lead nesta categoria"
-                descricao="Escolha outra categoria ou limpe o filtro para ver todos."
+                titulo="Nenhum Lead com esses filtros"
+                descricao="Ajuste categoria ou tipo de site, ou limpe os filtros para ver todos."
                 acao={{ href: "/leads", label: "Ver todos os Leads" }}
               />
             </div>
@@ -291,6 +312,7 @@ export default async function LeadsPage({
                 totalPages={totalPages}
                 total={total}
                 categoria={categoriaValida}
+                site={siteFiltro}
               />
             </>
           )}

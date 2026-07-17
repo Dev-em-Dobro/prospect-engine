@@ -36,8 +36,10 @@ depois `created_at desc` — [F003](F003-score-e-priorizacao.md)).
 ### Lista `/leads` — filtro e paginação
 - **Filtro opcional** por `categoria` via query `?categoria=…` (valores
   distintos dos Leads do tenant; “Todas” = sem filtro).
+- **Filtro opcional** por tipo de site via `?site=sem_site|site|link_in_bio|rede_social`
+  (alinha à coluna Site da lista; [F009](F009-sinal-site-agregador.md)).
 - **Paginação** server-side: **20** Leads por página (`?page=n`, default 1).
-  Trocar categoria redefine `page=1`.
+  Trocar filtro redefine `page=1`.
 - Contador mostra o total **filtrado**; a tabela só a página atual.
 - Bloco de follow-up ([F006](F006-follow-up-e-funil.md)) permanece fora da
   paginação/filtro da tabela (todos os pendentes do tenant).
@@ -94,6 +96,9 @@ Contrato completo da Places API em
 - [ ] **AC5b** — Filtro opcional por `categoria` (`?categoria=`) limita a
       lista e o total ao valor escolhido; categorias do select = distinct do
       tenant. Sem parâmetro = todas.
+- [ ] **AC5b2** — Filtro opcional por tipo de site (`?site=`): `sem_site`,
+      `site` (próprio), `link_in_bio`, `rede_social` — coerente com a coluna
+      Site / F009. Combinável com categoria.
 - [ ] **AC5c** — Paginação de **20** por página (`?page=`); UI com anterior/
       próxima e “página X de Y”. Página além do fim trata-se como última
       (ou equivalente).
@@ -109,8 +114,8 @@ Contrato completo da Places API em
 - Server Action em `src/actions/leads/coletar.ts`, fina — só orquestra
   `lib/places` + Prisma.
 - Página única em `src/app/leads/page.tsx` (form + lista).
-- Lista: `searchParams` `categoria` + `page`; `skip`/`take` 20; distinct
-  de categorias do tenant.
+- Lista: `searchParams` `categoria` + `site` + `page`; `skip`/`take` 20;
+  distinct de categorias do tenant; filtro de site via hosts F009.
 - Sem React Query / SWR — `revalidatePath('/leads')` após a action.
 
 ## Fora do escopo (F001)
@@ -118,7 +123,7 @@ Contrato completo da Places API em
 - Place Details → descartado na Fase 1: o Text Search já retorna
   telefone/website na mesma FieldMask (ver F002, Fora do escopo).
 - Diagnóstico automático após coleta → F002.
-- Filtros além de categoria (status, score, busca textual) → futuro.
+- Filtros além de categoria/site (status, score, busca textual) → futuro.
 - Cálculo de score → F003.
 - Detecção de Dor → F004.
 - Outreach → F005.
