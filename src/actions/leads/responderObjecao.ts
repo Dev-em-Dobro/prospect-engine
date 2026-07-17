@@ -8,7 +8,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { createLlmForUser } from "@/lib/llm";
 import { mensagemEscopo, requireTenant } from "@/lib/db/scoped";
-import { derivarDoDiagnostico } from "@/lib/dores/derivarDoDiagnostico";
+import { detectarDores, textosDasDores } from "@/lib/dores";
 import {
   responderObjecao as responderObjecaoLib,
   ObjecaoError,
@@ -50,7 +50,10 @@ export async function responderObjecaoAction(
     const llm = await createLlmForUser(userId);
     const lead = await prisma.lead.findFirst({
       where: { id: parsed.data.lead_id, user_id: userId },
-      include: { diagnosticos: { orderBy: { executado_em: "desc" }, take: 1 } },
+      include: {
+        diagnosticos: { orderBy: { executado_em: "desc" }, take: 1 },
+        dores: true,
+      },
     });
     if (!lead) {
       return { kind: "erro", mensagem: "Lead não encontrado" };
@@ -64,7 +67,10 @@ export async function responderObjecaoAction(
       };
     }
 
-    const dores = derivarDoDiagnostico(diag, lead.website);
+    const dores =
+      lead.dores.length > 0
+        ? textosDasDores(lead.dores)
+        : textosDasDores(detectarDores(diag, lead.website));
 
     let respostas: RespostaObjecao[];
     try {

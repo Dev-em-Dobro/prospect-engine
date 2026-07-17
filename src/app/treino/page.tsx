@@ -6,7 +6,7 @@ import { EmptyState } from "@/components/empty-state";
 import { chavesEssenciaisFaltando } from "@/lib/chaves";
 import { prisma } from "@/lib/db";
 import { requireTenant } from "@/lib/db/scoped";
-import { derivarDoDiagnostico } from "@/lib/dores/derivarDoDiagnostico";
+import { detectarDores, textosDasDores } from "@/lib/dores";
 import { Simulador } from "./simulador";
 
 export const dynamic = "force-dynamic";
@@ -20,6 +20,7 @@ export default async function TreinoPage() {
       take: 50,
       include: {
         diagnosticos: { orderBy: { executado_em: "desc" }, take: 1 },
+        dores: true,
       },
     }),
     chavesEssenciaisFaltando(userId),
@@ -29,11 +30,15 @@ export default async function TreinoPage() {
     .map((l) => {
       const diag = l.diagnosticos[0];
       if (!diag) return null;
+      const dores =
+        l.dores.length > 0
+          ? textosDasDores(l.dores)
+          : textosDasDores(detectarDores(diag, l.website));
       return {
         id: l.id,
         nome: l.nome,
         categoria: l.categoria,
-        dores: derivarDoDiagnostico(diag, l.website),
+        dores,
       };
     })
     .filter((o): o is NonNullable<typeof o> => o !== null);

@@ -40,7 +40,8 @@ describe("classificarWebsite", () => {
   });
 });
 
-describe("derivarDoDiagnostico", () => {
+/** Compat: wrapper deprecated = detectarDores + textosDasDores (F004). */
+describe("derivarDoDiagnostico (compat)", () => {
   it("sem website/site", () => {
     expect(
       derivarDoDiagnostico(
@@ -98,3 +99,4 @@ describe("derivarDoDiagnostico", () => {
     ).toEqual([]);
   });
 });
+

@@ -8,7 +8,7 @@
 
 import { createLlmForUser } from "@/lib/llm";
 import { mensagemEscopo, requireTenant } from "@/lib/db/scoped";
-import { derivarDoDiagnostico } from "@/lib/dores/derivarDoDiagnostico";
+import { detectarDores, textosDasDores } from "@/lib/dores";
 import { servicosRecomendados } from "@/lib/proposta/servicos";
 import { precificar, type Precificacao } from "@/lib/proposta/precos";
 import { formatarPropostaTexto } from "@/lib/proposta/formatar";
@@ -48,7 +48,10 @@ export async function gerarPropostaAction(
     const llm = await createLlmForUser(userId);
     const lead = await prisma.lead.findFirst({
       where: { id: parsed.data.lead_id, user_id: userId },
-      include: { diagnosticos: { orderBy: { executado_em: "desc" }, take: 1 } },
+      include: {
+        diagnosticos: { orderBy: { executado_em: "desc" }, take: 1 },
+        dores: true,
+      },
     });
     if (!lead) {
       return { kind: "erro", mensagem: "Lead não encontrado" };
@@ -62,7 +65,10 @@ export async function gerarPropostaAction(
       };
     }
 
-    const dores = derivarDoDiagnostico(diag, lead.website);
+    const dores =
+      lead.dores.length > 0
+        ? textosDasDores(lead.dores)
+        : textosDasDores(detectarDores(diag, lead.website));
     const servicos = servicosRecomendados(diag);
     const precificacao = precificar({
       servicos,

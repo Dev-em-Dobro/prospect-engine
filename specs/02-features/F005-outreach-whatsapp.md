@@ -127,7 +127,8 @@ no envio manual (fora do escopo desta feature).
 - Reescrita/variações A/B de uma Outreach existente.
 - Geração em lote ("gerar pra todos os priorizados") — conflita com a
   guideline síncrona.
-- Uso de Dores persistidas (F004) — por ora deriva do Diagnóstico direto.
+- Uso de Dores persistidas ([F004](F004-deteccao-de-dor.md)) — consumers leem
+  `Lead.dores.detalhes` após o Diagnóstico.
 
 ## Custo estimado
 ~R$0,05 por Outreach (Opus 4.8) — ver [contrato](../03-contracts/claude-messages.md).

@@ -110,14 +110,14 @@ structured output e visão (F008). Suportar **OpenAI e Gemini** exige uma
 > **Gemini** como fast-follow (a config já aceita as 3 chaves desde o início).
 
 ## 5. Spec faltante — Dor (F004)
-Único item de **dívida de spec**: a entidade `Dor` existe no schema mas **nada a
-cria**. Hoje F003/F005/F011/F012 derivam as Dores do Diagnóstico direto (via
-`derivarDoDiagnostico`). Não bloqueia o lançamento, mas fecha o modelo de domínio.
+Único item de **dívida de spec** fechado: a entidade `Dor` existia no schema mas
+**nada a criava**. F003/F005/F011/F012 derivavam do Diagnóstico via
+`derivarDoDiagnostico`.
 
-- [ ] Escrever `specs/02-features/F004-deteccao-de-dor.md`.
-- [ ] Persistir `Dor` no passo do Diagnóstico (F002) e migrar as fontes que hoje
-      leem o Diagnóstico direto (pontos marcados "até a F004 existir" em
-      `derivarDoDiagnostico`, F003, F005, F011, F012, F009).
+- [x] Escrever `specs/02-features/F004-deteccao-de-dor.md`.
+- [x] Persistir `Dor` no passo do Diagnóstico (F002) e migrar as fontes que
+      liam o Diagnóstico direto (F005, F011, F012, F013; F003 permanece no
+      Diagnóstico até evolução própria).
 
 ## 6. UI/UX mais clean
 Redesign pra cara de produto (hoje é dashboard funcional interna).

@@ -2,11 +2,13 @@
 
 // F005 — Outreach de WhatsApp · F006 — suporte a follow-up (tipo).
 // Specs: F005-outreach-whatsapp.md e F006-follow-up-e-funil.md
+// F004 — dores persistidas (fallback: detectar do Diagnóstico se Lead antigo).
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { mensagemEscopo, requireTenant } from "@/lib/db/scoped";
+import { detectarDores, textosDasDores } from "@/lib/dores";
 import {
   gerarOutreach as gerarOutreachLib,
   OutreachError,
@@ -23,29 +25,6 @@ export type GerarOutreachState =
   | { kind: "idle" }
   | { kind: "ok"; mensagem: string; waLink: string | null; outreachId: string }
   | { kind: "erro"; mensagem: string };
-
-type DiagResumo = {
-  tem_site: boolean;
-  tem_https: boolean | null;
-  performance_mobile: number | null;
-};
-
-function derivarDores(diag: DiagResumo, website: string | null): string[] {
-  if (!website || !diag.tem_site) {
-    return ["não tem site / presença digital própria"];
-  }
-
-  const dores: string[] = [];
-  if (diag.performance_mobile !== null && diag.performance_mobile < 50) {
-    dores.push(
-      `site muito lento no celular (nota ${diag.performance_mobile}/100 no Google PageSpeed)`,
-    );
-  }
-  if (diag.tem_https === false) {
-    dores.push("site sem HTTPS (sem cadeado de segurança)");
-  }
-  return dores;
-}
 
 function linkWhatsapp(telefone: string | null, mensagem: string): string | null {
   if (!telefone) return null;
@@ -72,7 +51,10 @@ export async function gerarOutreachAction(
     const llm = await createLlmForUser(userId);
     const lead = await prisma.lead.findFirst({
       where: { id: parsed.data.lead_id, user_id: userId },
-      include: { diagnosticos: { orderBy: { executado_em: "desc" }, take: 1 } },
+      include: {
+        diagnosticos: { orderBy: { executado_em: "desc" }, take: 1 },
+        dores: true,
+      },
     });
     if (!lead) {
       return { kind: "erro", mensagem: "Lead não encontrado" };
@@ -86,11 +68,16 @@ export async function gerarOutreachAction(
       };
     }
 
+    const dores =
+      lead.dores.length > 0
+        ? textosDasDores(lead.dores)
+        : textosDasDores(detectarDores(diag, lead.website));
+
     const ctx: ContextoLead = {
       nome: lead.nome,
       categoria: lead.categoria,
       endereco: lead.endereco,
-      dores: derivarDores(diag, lead.website),
+      dores,
     };
 
     let mensagem: string;
