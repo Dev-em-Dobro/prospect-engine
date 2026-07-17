@@ -6,7 +6,8 @@ Proposta — 2026-05-27
 ## Objetivo
 Permitir que o operador colete **Leads** novos a partir de uma busca
 textual no Google Places, persistindo cada estabelecimento retornado
-como um Lead com `status = novo`, deduplicado por `place_id`.
+como um Lead com `status = novo`, deduplicado por `place_id` **do aluno**
+(`unique(user_id, place_id)` — [F015](F015-multi-tenant.md)).
 
 É o ponto de entrada do funil: sem F001 não há Lead pra diagnosticar,
 priorizar ou abordar.
@@ -38,7 +39,8 @@ E redirecionar para `/leads` (lista de todos os Leads, ordenada por
    1. Valida input com Zod.
    2. Chama `src/lib/places/textSearch(query)` → lista de `PlacesResult`.
    3. Para cada resultado, tenta `prisma.lead.create` com `status = novo`,
-      `score = 0`. Conflito em `place_id` (unique) → ignora silenciosamente
+      `score = 0`, `user_id` da sessão. Conflito em `(user_id, place_id)`
+      (unique por aluno — [F015](F015-multi-tenant.md)) → ignora silenciosamente
       e incrementa `ignorados`.
    4. Retorna `{ criados, ignorados }`.
 3. UI mostra mensagem e atualiza a lista.
@@ -68,8 +70,9 @@ Contrato completo da Places API em
 - [ ] **AC1** — Enviar `termo="barbearia"` + `localizacao="Curitiba PR"`
       cria até 20 Leads novos no banco com `status=novo` e `score=0`.
 - [ ] **AC2** — Rodar a mesma busca duas vezes não duplica nenhum Lead
-      (`place_id` é unique). A segunda execução reporta todos como
-      `ignorados`.
+      do aluno (`unique(user_id, place_id)` — [F015](F015-multi-tenant.md)).
+      A segunda execução reporta todos como `ignorados`. Outro aluno pode
+      coletar o mesmo `place_id`.
 - [ ] **AC3** — Cada Lead criado tem `nome`, `endereco`, `categoria`,
       `place_id` preenchidos. `telefone` e `website` podem ser `null`.
 - [ ] **AC4** — Resposta 4xx/5xx da Places API é capturada: a Server

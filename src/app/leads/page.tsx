@@ -1,15 +1,19 @@
 import { prisma } from "@/lib/db";
+import { requireTenant } from "@/lib/db/scoped";
+import { chavesEssenciaisFaltando } from "@/lib/chaves";
 import { valor as calcularValor } from "@/lib/score/score";
 import { classificarWebsite } from "@/lib/diagnostico/agregador";
 import { filaDeFollowUp } from "@/lib/followup";
 import { ESTAGIOS_EM_ABERTO } from "@/lib/funil";
 import { demoUrlFor } from "@/lib/demos";
+import { BannerChaves } from "@/components/banner-chaves";
+import { EmptyState } from "@/components/empty-state";
 import { ColetarForm } from "./coletar-form";
 import { GerarOutreachButton } from "./gerar-outreach-button";
 import { LeadRow } from "./lead-row";
 import { linkWhatsapp } from "./ui";
 
-// Ferramenta interna: a lista sempre reflete o banco, sem prerender.
+// Sempre reflete o banco do aluno logado (F015) — sem cache cross-tenant.
 export const dynamic = "force-dynamic";
 
 const fmtData = new Intl.DateTimeFormat("pt-BR", {
@@ -18,14 +22,19 @@ const fmtData = new Intl.DateTimeFormat("pt-BR", {
 });
 
 export default async function LeadsPage() {
-  const leads = await prisma.lead.findMany({
-    orderBy: [{ score: "desc" }, { created_at: "desc" }],
-    include: {
-      diagnosticos: { orderBy: { executado_em: "desc" }, take: 1 },
-      // Todos os Outreach (mais recente primeiro) pra exibir no modal do Lead.
-      outreaches: { orderBy: { gerado_em: "desc" } },
-    },
-  });
+  const { whereUser, userId } = await requireTenant();
+  const [leads, faltandoChaves] = await Promise.all([
+    prisma.lead.findMany({
+      where: whereUser,
+      orderBy: [{ score: "desc" }, { created_at: "desc" }],
+      include: {
+        diagnosticos: { orderBy: { executado_em: "desc" }, take: 1 },
+        outreaches: { orderBy: { gerado_em: "desc" } },
+      },
+    }),
+    chavesEssenciaisFaltando(userId),
+  ]);
+  const semGoogle = faltandoChaves.includes("google");
 
   // filaDeFollowUp espera só os enviados (mais recente primeiro); a query traz
   // todos os Outreach, então reduzimos aqui antes de calcular.
@@ -65,6 +74,8 @@ export default async function LeadsPage() {
     });
 
   return (
+    <>
+    <BannerChaves />
     <main className="mx-auto max-w-6xl px-6 py-10">
       <h1 className="text-2xl font-bold tracking-tight">Leads</h1>
       <p className="mt-1 text-sm text-muted">
@@ -74,7 +85,19 @@ export default async function LeadsPage() {
       </p>
 
       <div className="mt-6">
-        <ColetarForm />
+        {semGoogle ? (
+          <EmptyState
+            titulo="Configure a chave Google pra coletar Leads"
+            descricao="A busca usa a Places API da sua conta. Cole a chave em Configuração — há um tutorial curto se você ainda não criou."
+            acao={{ href: "/configuracao", label: "Ir para Configuração" }}
+            secundaria={{
+              href: "/configuracao/tutorial-google",
+              label: "Como criar a chave Google",
+            }}
+          />
+        ) : (
+          <ColetarForm />
+        )}
       </div>
 
       {followUp.length > 0 && (
@@ -99,6 +122,27 @@ export default async function LeadsPage() {
 
       <div className="mt-8">
         <p className="text-sm text-muted">{leads.length} Lead(s)</p>
+        {leads.length === 0 ? (
+          <div className="mt-3">
+            <EmptyState
+              titulo={
+                semGoogle
+                  ? "Nenhum Lead ainda — faltam chaves"
+                  : "Nenhum Lead ainda"
+              }
+              descricao={
+                semGoogle
+                  ? "Depois de configurar o Google, use o formulário de coleta acima pra buscar estabelecimentos."
+                  : "Use o formulário acima: informe um termo (ex.: barbearia) e uma localização (ex.: Curitiba PR)."
+              }
+              acao={
+                semGoogle
+                  ? { href: "/configuracao", label: "Configurar chaves" }
+                  : undefined
+              }
+            />
+          </div>
+        ) : null}
         {leads.length > 0 && (
           <p className="mt-0.5 text-xs text-zinc-500">
             Ordenado por Score; empates com &quot;sem site próprio&quot;
@@ -173,5 +217,6 @@ export default async function LeadsPage() {
         )}
       </div>
     </main>
+    </>
   );
 }
