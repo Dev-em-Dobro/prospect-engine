@@ -58,6 +58,12 @@ describe("sendMagicLinkEmail", () => {
       "http://mailpit.test/api/v1/send",
       expect.objectContaining({ method: "POST" }),
     );
+    const body = JSON.parse(
+      (fetchMock.mock.calls[0]?.[1] as { body: string }).body,
+    );
+    expect(body.Subject).toContain("Orion Lead Hunter");
+    expect(body.HTML).toContain("Entrar no Orion Lead Hunter");
+    expect(body.HTML).toContain("#22c55e");
   });
 
   it("mailpit falha HTTP", async () => {

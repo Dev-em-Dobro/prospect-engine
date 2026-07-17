@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth/client";
+import { NOME_PRODUTO_PARTES } from "@/lib/produto";
 
 function Icone({ d }: { d: React.ReactNode }) {
   return (
@@ -137,7 +138,8 @@ function Brand() {
         <circle cx="12" cy="12" r="6" />
         <circle cx="12" cy="12" r="2" />
       </svg>
-      prospect&nbsp;<span className="text-primary">engine</span>
+      {NOME_PRODUTO_PARTES.primaria}&nbsp;
+      <span className="text-primary">{NOME_PRODUTO_PARTES.secundaria}</span>
     </Link>
   );
 }

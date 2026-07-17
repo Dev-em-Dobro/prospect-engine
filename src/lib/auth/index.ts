@@ -7,12 +7,13 @@ import { magicLink } from "better-auth/plugins";
 import { nextCookies } from "better-auth/next-js";
 import { prisma } from "@/lib/db";
 import { sendMagicLinkEmail } from "@/lib/email";
+import { NOME_PRODUTO } from "@/lib/produto";
 import { loadAuthEnv } from "./env";
 
 const env = loadAuthEnv();
 
 export const auth = betterAuth({
-  appName: "prospect engine",
+  appName: NOME_PRODUTO,
   secret: env.secret,
   baseURL: env.baseURL,
   database: prismaAdapter(prisma, {

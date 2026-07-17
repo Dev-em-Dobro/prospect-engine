@@ -3,11 +3,11 @@
 import type { Metadata } from "next";
 import { PaginaLegal } from "@/components/pagina-legal";
 import { OPERADOR_LEGAL } from "@/lib/legal";
+import { NOME_PRODUTO } from "@/lib/produto";
 
 export const metadata: Metadata = {
-  title: "Política de Privacidade · prospect engine",
-  description:
-    "Como o prospect engine trata dados pessoais e chaves de API (LGPD).",
+  title: `Política de Privacidade · ${NOME_PRODUTO}`,
+  description: `Como o ${NOME_PRODUTO} trata dados pessoais e chaves de API (LGPD).`,
 };
 
 export default function PrivacidadePage() {

@@ -3,10 +3,11 @@
 import type { Metadata } from "next";
 import { PaginaLegal } from "@/components/pagina-legal";
 import { OPERADOR_LEGAL } from "@/lib/legal";
+import { NOME_PRODUTO } from "@/lib/produto";
 
 export const metadata: Metadata = {
-  title: "Termos de Uso · prospect engine",
-  description: "Termos de uso do prospect engine para alunos.",
+  title: `Termos de Uso · ${NOME_PRODUTO}`,
+  description: `Termos de uso do ${NOME_PRODUTO} para alunos.`,
 };
 
 export default function TermosPage() {

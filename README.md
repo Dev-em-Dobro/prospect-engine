@@ -1,9 +1,11 @@
-# prospect-engine
+# Orion Lead Hunter
 
-Motor de prospecção automatizada, genérico e sem marca. Coleta
-estabelecimentos via Google Places, identifica quem tem presença digital
-fraca (sem site, site lento, sem HTTPS), prioriza cada um por um score e
-usa a Claude API pra escrever o texto que inicia a conversa com cada Lead.
+> Repositório: `prospect-engine`
+
+Motor de prospecção para alunos (Dev em Dobro). Coleta estabelecimentos via
+Google Places, identifica quem tem presença digital fraca (sem site, site
+lento, sem HTTPS), prioriza cada um por um score e usa a Claude API pra
+escrever o texto que inicia a conversa com cada Lead.
 
 Multi-tenant (Fase 2): cada aluno faz login e cola as próprias chaves de API
 em `/configuracao` (BYOK). Personalize a oferta em `src/lib/brand.ts`.

@@ -3,6 +3,7 @@
 
 import { Suspense } from "react";
 import { googleAuthEnabled } from "@/lib/auth";
+import { NOME_PRODUTO_PARTES } from "@/lib/produto";
 import { LoginForm } from "./login-form";
 
 export default function LoginPage() {
@@ -25,7 +26,10 @@ export default function LoginPage() {
       <div className="relative w-full max-w-md space-y-8">
         <div className="space-y-3 text-center">
           <p className="text-3xl font-bold tracking-tight sm:text-4xl">
-            prospect <span className="text-primary">engine</span>
+            {NOME_PRODUTO_PARTES.primaria}{" "}
+            <span className="text-primary">
+              {NOME_PRODUTO_PARTES.secundaria}
+            </span>
           </p>
           <h1 className="text-lg font-medium text-zinc-200">
             Entre na sua conta de aluno

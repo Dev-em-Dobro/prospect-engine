@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Fira_Code, Fira_Sans } from "next/font/google";
 import { AppShell } from "@/components/app-shell";
+import { NOME_PRODUTO } from "@/lib/produto";
 import "./globals.css";
 
 const firaSans = Fira_Sans({
@@ -15,8 +16,8 @@ const firaCode = Fira_Code({
 });
 
 export const metadata: Metadata = {
-  title: "prospect engine",
-  description: "Motor de prospecção automatizada",
+  title: NOME_PRODUTO,
+  description: "Motor de prospecção para alunos — Leads prontos com Dor e Outreach",
 };
 
 export default function RootLayout({
