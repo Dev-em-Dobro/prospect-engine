@@ -30,8 +30,18 @@ Após a operação, exibir contagem:
 
 > *"Busca concluída: N Leads novos criados, M ignorados (já existiam)."*
 
-E redirecionar para `/leads` (lista de todos os Leads, ordenada por
-`created_at desc`).
+E redirecionar para `/leads` (lista do aluno, ordenada por `score desc`,
+depois `created_at desc` — [F003](F003-score-e-priorizacao.md)).
+
+### Lista `/leads` — filtro e paginação
+- **Filtro opcional** por `categoria` via query `?categoria=…` (valores
+  distintos dos Leads do tenant; “Todas” = sem filtro).
+- **Paginação** server-side: **20** Leads por página (`?page=n`, default 1).
+  Trocar categoria redefine `page=1`.
+- Contador mostra o total **filtrado**; a tabela só a página atual.
+- Bloco de follow-up ([F006](F006-follow-up-e-funil.md)) permanece fora da
+  paginação/filtro da tabela (todos os pendentes do tenant).
+- Toda query escopada por `user_id` ([F015](F015-multi-tenant.md)).
 
 ## Fluxo
 1. Operador acessa `/leads`, preenche o form, clica em **Coletar**.
@@ -78,12 +88,18 @@ Contrato completo da Places API em
 - [ ] **AC4** — Resposta 4xx/5xx da Places API é capturada: a Server
       Action retorna `{ erro: string }` e a UI exibe a mensagem sem
       quebrar a aplicação.
-- [ ] **AC5** — A página `/leads` lista todos os Leads ordenados por
-      `created_at desc`, mostrando `nome`, `categoria`, `status`,
-      `endereco` e `website` (link clicável se presente).
-- [ ] **AC6** — Chave da Places API é lida exclusivamente de
-      `process.env.GOOGLE_PLACES_API_KEY`. Ausência da chave →
-      Server Action retorna erro descritivo (`"GOOGLE_PLACES_API_KEY não configurada"`).
+- [ ] **AC5** — A página `/leads` lista os Leads do aluno ordenados por
+      `score desc`, depois `created_at desc` ([F003](F003-score-e-priorizacao.md)),
+      mostrando `nome`, `categoria`, `status`, score e sinais de site.
+- [ ] **AC5b** — Filtro opcional por `categoria` (`?categoria=`) limita a
+      lista e o total ao valor escolhido; categorias do select = distinct do
+      tenant. Sem parâmetro = todas.
+- [ ] **AC5c** — Paginação de **20** por página (`?page=`); UI com anterior/
+      próxima e “página X de Y”. Página além do fim trata-se como última
+      (ou equivalente).
+- [ ] **AC6** — Chave da Places API é resolvida via BYOK do aluno
+      ([F016](F016-configuracao-de-chaves.md)); ausência → erro descritivo na
+      Server Action / empty state de Configuração.
 - [ ] **AC7** — Validação Zod falha → mensagem específica do campo
       inválido na UI, sem chamar a Places API.
 
@@ -93,6 +109,8 @@ Contrato completo da Places API em
 - Server Action em `src/actions/leads/coletar.ts`, fina — só orquestra
   `lib/places` + Prisma.
 - Página única em `src/app/leads/page.tsx` (form + lista).
+- Lista: `searchParams` `categoria` + `page`; `skip`/`take` 20; distinct
+  de categorias do tenant.
 - Sem React Query / SWR — `revalidatePath('/leads')` após a action.
 
 ## Fora do escopo (F001)
@@ -100,7 +118,7 @@ Contrato completo da Places API em
 - Place Details → descartado na Fase 1: o Text Search já retorna
   telefone/website na mesma FieldMask (ver F002, Fora do escopo).
 - Diagnóstico automático após coleta → F002.
-- Filtros, busca e ordenação na lista de Leads → F-listagem.
+- Filtros além de categoria (status, score, busca textual) → futuro.
 - Cálculo de score → F003.
 - Detecção de Dor → F004.
 - Outreach → F005.
