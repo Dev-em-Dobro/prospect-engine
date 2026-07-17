@@ -9,6 +9,7 @@ import {
   type ContextoLead,
   type TipoOutreach,
 } from "./prompt";
+import { removerEmojis } from "./removerEmojis";
 
 export class OutreachError extends Error {
   constructor(
@@ -36,7 +37,7 @@ export async function gerarOutreach(
       tier: "strong",
       maxTokens: 1024,
     });
-    return { mensagem: out.mensagem.trim() };
+    return { mensagem: removerEmojis(out.mensagem.trim()) };
   } catch (e) {
     if (e instanceof OutreachError) throw e;
     if (e instanceof LlmError) {
