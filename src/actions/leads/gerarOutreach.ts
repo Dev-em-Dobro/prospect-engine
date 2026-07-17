@@ -15,6 +15,7 @@ import {
 } from "@/lib/outreach/gerarOutreach";
 import { createLlmForUser } from "@/lib/llm";
 import type { ContextoLead } from "@/lib/outreach/prompt";
+import { linkWhatsapp } from "@/lib/outreach/whatsappLink";
 
 const schema = z.object({
   lead_id: z.string().cuid("lead_id inválido"),
@@ -25,14 +26,6 @@ export type GerarOutreachState =
   | { kind: "idle" }
   | { kind: "ok"; mensagem: string; waLink: string | null; outreachId: string }
   | { kind: "erro"; mensagem: string };
-
-function linkWhatsapp(telefone: string | null, mensagem: string): string | null {
-  if (!telefone) return null;
-  let digitos = telefone.replace(/\D/g, "");
-  if (!digitos) return null;
-  if (digitos.length <= 11) digitos = `55${digitos}`;
-  return `https://wa.me/${digitos}?text=${encodeURIComponent(mensagem)}`;
-}
 
 export async function gerarOutreachAction(
   _prev: GerarOutreachState,
