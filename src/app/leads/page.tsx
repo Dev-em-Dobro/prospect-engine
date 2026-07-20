@@ -8,6 +8,7 @@ import { ESTAGIOS_EM_ABERTO } from "@/lib/funil";
 import { demoUrlFor } from "@/lib/demos";
 import { BannerChaves } from "@/components/banner-chaves";
 import { EmptyState } from "@/components/empty-state";
+import { AjudaScore } from "./ajuda-score";
 import { ColetarForm } from "./coletar-form";
 import { GerarOutreachButton } from "./gerar-outreach-button";
 import { LeadRow } from "./lead-row";
@@ -197,6 +198,7 @@ export default async function LeadsPage({
               {total > 0 && (
                 <p className="mt-0.5 text-xs text-zinc-500">
                   Ordenado por Score (depois data). Até {PAGE_SIZE} por página.
+                  Score 0 = ainda não priorizado — Diagnosticar → Priorizar.
                 </p>
               )}
             </div>
@@ -250,7 +252,12 @@ export default async function LeadsPage({
                       <th className="px-3 py-3 font-medium">Nome</th>
                       <th className="px-3 py-3 font-medium">Categoria</th>
                       <th className="px-3 py-3 font-medium">Status</th>
-                      <th className="px-3 py-3 font-medium">Score</th>
+                      <th className="px-3 py-3 font-medium">
+                        <span className="inline-flex items-center gap-1.5">
+                          Score
+                          <AjudaScore foco="score" colocacao="abaixo-esquerda" />
+                        </span>
+                      </th>
                       <th className="px-3 py-3 font-medium">Avaliações</th>
                       <th className="px-3 py-3 font-medium">Site</th>
                       <th className="px-3 py-3" />

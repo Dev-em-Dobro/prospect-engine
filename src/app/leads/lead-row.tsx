@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import type { LeadStatus } from "@prisma/client";
 import { STATUS_BADGE, scoreBadge, SimNao } from "./ui";
+import { AjudaScore } from "./ajuda-score";
 import { DiagnosticarButton } from "./diagnosticar-button";
 import { DiagnosticarUxButton } from "./diagnosticar-ux-button";
 import { PriorizarButton } from "./priorizar-button";
@@ -124,9 +125,13 @@ export function LeadRow(p: LeadRowProps) {
                   <span className={`badge ${STATUS_BADGE[p.status]}`}>
                     {p.status}
                   </span>
-                  <span className={`badge font-mono ${scoreBadge(p.score)}`}>
+                  <span
+                    className={`badge font-mono ${scoreBadge(p.score)}`}
+                    title="Score (0 até Priorizar)"
+                  >
                     {p.score}
                   </span>
+                  <AjudaScore foco="score" colocacao="abaixo-direita" />
                   <button
                     type="button"
                     onClick={() => setOpen(false)}
@@ -142,8 +147,9 @@ export function LeadRow(p: LeadRowProps) {
                 {/* Infos do lead */}
                 <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
                   <div>
-                    <dt className="text-xs tracking-wide text-zinc-500 uppercase">
+                    <dt className="inline-flex items-center gap-1.5 text-xs tracking-wide text-zinc-500 uppercase">
                       Valor
+                      <AjudaScore foco="valor" colocacao="abaixo-esquerda" />
                     </dt>
                     <dd className="mt-0.5 font-mono text-zinc-200">
                       {p.valor}{" "}
