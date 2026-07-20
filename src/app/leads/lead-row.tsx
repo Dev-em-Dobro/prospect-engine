@@ -6,7 +6,6 @@ import type { LeadStatus } from "@prisma/client";
 import { STATUS_BADGE, scoreBadge, SimNao } from "./ui";
 import { AjudaScore } from "./ajuda-score";
 import { DiagnosticarButton } from "./diagnosticar-button";
-import { DiagnosticarUxButton } from "./diagnosticar-ux-button";
 import { PriorizarButton } from "./priorizar-button";
 import { GerarOutreachButton } from "./gerar-outreach-button";
 import { ResponderObjecaoPanel } from "./responder-objecao-panel";
@@ -319,7 +318,6 @@ export function LeadRow(p: LeadRowProps) {
                   </p>
                   <div className="mt-2 flex flex-wrap items-start gap-2">
                     <DiagnosticarButton leadId={p.id} />
-                    {p.website && <DiagnosticarUxButton leadId={p.id} />}
                     <PriorizarButton leadId={p.id} />
                     <GerarOutreachButton leadId={p.id} />
                     {["contatado", "respondeu", "qualificado"].includes(
