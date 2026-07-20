@@ -41,7 +41,7 @@ Gerados pelo Better Auth com adapter Prisma: `User`, `Session`, `Account`,
    sessão ou lança. É o ponto único de checagem, consumido pela F015.
 
 ## Critérios de aceitação
-- [x] **AC1** — Sem sessão, acessar `/`, `/leads`, `/conteudo`, `/treino` ou
+- [x] **AC1** — Sem sessão, acessar `/`, `/leads`, `/treino` ou
       `/configuracao` redireciona pra `/login`. Rotas de login/callback são públicas.
 - [x] **AC2** — Login com Google cria `User`+`Session` na 1ª vez e reusa nas
       seguintes (mesmo `User` pelo e-mail/Account).
@@ -77,7 +77,7 @@ Gerados pelo Better Auth com adapter Prisma: `User`, `Session`, `Account`,
    ([ADR-010](../04-decisions/ADR-010-email-transacional.md)). UI: http://127.0.0.1:8025
    Em produção: `EMAIL_PROVIDER=resend` + `RESEND_SMTP_*`.
 5. `npm run dev` — sem as envs de auth o boot deve falhar com mensagem clara.
-6. Sem cookie: abrir `/`, `/leads`, `/conteudo`, `/treino` → redirect `/login`.
+6. Sem cookie: abrir `/`, `/leads`, `/treino`, `/configuracao` → redirect `/login`.
 7. Google: entrar → 1ª vez cria User/Session (Prisma Studio / tabela `user`);
    segunda vez reusa o mesmo User.
 8. Magic link: informar e-mail → estado "enviamos um link"; abrir o link no

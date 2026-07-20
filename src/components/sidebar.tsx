@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useTransition } from "react";
 import { authClient } from "@/lib/auth/client";
 import { NOME_PRODUTO_PARTES } from "@/lib/produto";
 
@@ -53,25 +54,6 @@ const GRUPOS = [
                 <circle cx="9" cy="7" r="4" />
                 <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
                 <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-              </>
-            }
-          />
-        ),
-      },
-    ],
-  },
-  {
-    titulo: "Conteúdo",
-    itens: [
-      {
-        href: "/conteudo",
-        label: "Vídeo-Funil",
-        icone: (
-          <Icone
-            d={
-              <>
-                <path d="m22 8-6 4 6 4V8Z" />
-                <rect x="2" y="6" width="14" height="12" rx="2" />
               </>
             }
           />
@@ -164,6 +146,69 @@ function LogoutButton({ className }: { className?: string }) {
   );
 }
 
+function NavSpinner() {
+  return (
+    <span
+      className="ml-auto inline-block h-3.5 w-3.5 shrink-0 animate-spin rounded-full border-2 border-zinc-500 border-t-primary"
+      aria-hidden
+    />
+  );
+}
+
+function NavLink({
+  href,
+  label,
+  icone,
+  ativo,
+  compact,
+}: {
+  href: string;
+  label: string;
+  icone?: React.ReactNode;
+  ativo: boolean;
+  compact?: boolean;
+}) {
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
+
+  return (
+    <Link
+      href={href}
+      aria-busy={pending || undefined}
+      onClick={(e) => {
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) {
+          return;
+        }
+        e.preventDefault();
+        startTransition(() => {
+          router.push(href);
+        });
+      }}
+      className={
+        compact
+          ? `inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 transition-colors duration-200 ${
+              ativo
+                ? "bg-zinc-800/80 text-zinc-50"
+                : "text-zinc-400 hover:text-zinc-200"
+            } ${pending ? "opacity-80" : ""}`
+          : `flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm transition-colors duration-200 ${
+              ativo
+                ? "bg-zinc-800/80 font-medium text-zinc-50"
+                : "text-zinc-400 hover:bg-zinc-800/40 hover:text-zinc-200"
+            } ${pending ? "opacity-80" : ""}`
+      }
+    >
+      {icone ? (
+        <span className={ativo || pending ? "text-primary" : "text-zinc-500"}>
+          {icone}
+        </span>
+      ) : null}
+      {label}
+      {pending ? <NavSpinner /> : null}
+    </Link>
+  );
+}
+
 export function Sidebar() {
   const pathname = usePathname();
 
@@ -186,23 +231,12 @@ export function Sidebar() {
               <ul className="mt-2 space-y-1">
                 {grupo.itens.map((item) => (
                   <li key={item.href}>
-                    <Link
+                    <NavLink
                       href={item.href}
-                      className={`flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm transition-colors duration-200 ${
-                        ativo(item.href)
-                          ? "bg-zinc-800/80 font-medium text-zinc-50"
-                          : "text-zinc-400 hover:bg-zinc-800/40 hover:text-zinc-200"
-                      }`}
-                    >
-                      <span
-                        className={
-                          ativo(item.href) ? "text-primary" : "text-zinc-500"
-                        }
-                      >
-                        {item.icone}
-                      </span>
-                      {item.label}
-                    </Link>
+                      label={item.label}
+                      icone={item.icone}
+                      ativo={ativo(item.href)}
+                    />
                   </li>
                 ))}
               </ul>
@@ -227,19 +261,15 @@ export function Sidebar() {
       <header className="sticky top-0 z-40 flex h-14 items-center justify-between gap-2 border-b border-border bg-background/80 px-4 backdrop-blur md:hidden">
         <Brand />
         <div className="flex items-center gap-1 text-sm">
-          <nav className="flex items-center gap-1">
+          <nav className="flex items-center gap-1 overflow-x-auto">
             {GRUPOS.flatMap((g) => g.itens).map((item) => (
-              <Link
+              <NavLink
                 key={item.href}
                 href={item.href}
-                className={`rounded-md px-2.5 py-1.5 transition-colors duration-200 ${
-                  ativo(item.href)
-                    ? "bg-zinc-800/80 text-zinc-50"
-                    : "text-zinc-400 hover:text-zinc-200"
-                }`}
-              >
-                {item.label}
-              </Link>
+                label={item.label}
+                ativo={ativo(item.href)}
+                compact
+              />
             ))}
           </nav>
           <LogoutButton className="btn-ghost shrink-0" />
