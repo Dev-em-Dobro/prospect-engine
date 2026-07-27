@@ -50,6 +50,7 @@ export const COMPRADORES_HUBLA: CompradorHubla[] = [
   { email: "douglasmax531@gmail.com", pagoEm: "23/07/2026 09:31:55" },
   { email: "fsergiorcn@gmail.com", pagoEm: "24/07/2026 18:06:32" },
   { email: "mariana.a.reinaldo@gmail.com", pagoEm: "27/07/2026 11:22:00" },
+  { email: "contatomclaudino@gmail.com", pagoEm: "27/07/2026 15:09:00" },
   // Seed manual anterior
   { email: "pabloviana2010@gmail.com", pagoEm: "27/07/2026 09:17:00" },
 ];

@@ -14,26 +14,9 @@
 | `SEU_WHATSAPP` | seu número **só com números**, país e DDD (ex: `5585999998888`) | todos os botões de WhatsApp |
 | `[SEU EMAIL]` | seu e-mail (ou apague a linha do e-mail no rodapé) | rodapé |
 | `[PLACEHOLDER: sua foto aqui]` | (opcional) uma foto sua | seção "Quem sou" |
-| `[PLACEHOLDER: print do projeto]` | (opcional) um print de cada projeto | seção "Projetos" |
 
 > **Atenção no WhatsApp:** o número vai **sem** `+`, **sem** espaço e **sem** traço. Só números.
 > Ex: `5585999998888` (55 = Brasil, 85 = DDD, resto = número).
-
----
-
-## Os seus projetos
-
-O portfólio já vem com 3 **projetos de demonstração** (barbearia, clínica, advocacia). Você pode:
-
-- **Manter** como estão (são demonstrações honestas do seu padrão, você recebeu esses templates), ou
-- **Trocar** pelos seus: procure `Site de barbearia`, `Site de clínica`, `Site de advocacia` e mude o
-  nome e a linha de descrição. Se você tiver um print do projeto, troque o bloco cinza
-  `[PLACEHOLDER: print do projeto]` por uma imagem. Pra adicionar mais, copie um bloco
-  `<article class="hv-card">` inteiro e cole em seguida.
-
-> **Regra de honestidade:** se é um projeto de demonstração (você fez pra treinar, sem cliente pago),
-> mantenha a marca **"Projeto de demonstração"**. Nunca diga que foi trabalho pago. Prova de
-> capacidade fecha mais que case inventado.
 
 ---
 
