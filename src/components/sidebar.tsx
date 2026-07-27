@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { authClient } from "@/lib/auth/client";
+import { ENTREGAVEIS_MENU } from "@/lib/entregaveis";
 import { NOME_PRODUTO_PARTES } from "@/lib/produto";
 
 function Icone({ d }: { d: React.ReactNode }) {
@@ -77,6 +78,28 @@ const GRUPOS = [
           />
         ),
       },
+    ],
+  },
+  {
+    titulo: "Materiais",
+    itens: [
+      {
+        href: "/entregaveis",
+        label: "Visão geral",
+        icone: (
+          <Icone
+            d={
+              <>
+                <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a2.5 2.5 0 0 1 0-5H20" />
+              </>
+            }
+          />
+        ),
+      },
+      ...ENTREGAVEIS_MENU.map((item) => ({
+        href: `/entregaveis/${item.slug}`,
+        label: item.titulo,
+      })),
     ],
   },
   {
@@ -212,8 +235,11 @@ function NavLink({
 export function Sidebar() {
   const pathname = usePathname();
 
-  const ativo = (href: string) =>
-    href === "/" ? pathname === "/" : pathname.startsWith(href);
+  const ativo = (href: string) => {
+    if (href === "/") return pathname === "/";
+    if (href === "/entregaveis") return pathname === "/entregaveis";
+    return pathname.startsWith(href);
+  };
 
   return (
     <>
@@ -234,7 +260,7 @@ export function Sidebar() {
                     <NavLink
                       href={item.href}
                       label={item.label}
-                      icone={item.icone}
+                      icone={"icone" in item ? item.icone : undefined}
                       ativo={ativo(item.href)}
                     />
                   </li>
