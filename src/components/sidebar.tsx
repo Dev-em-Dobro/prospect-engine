@@ -117,7 +117,22 @@ const ICONES_ENTREGAVEIS: Record<string, React.ReactNode> = {
   ),
 };
 
-const GRUPOS = [
+function IconeCadeado() {
+  return (
+    <Icone
+      d={
+        <>
+          <rect x="5" y="11" width="14" height="10" rx="2" />
+          <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+        </>
+      }
+    />
+  );
+}
+
+const GRUPO_MATERIAIS = "Materiais";
+
+const GRUPOS_BASE = [
   {
     titulo: "Prospecção",
     itens: [
@@ -278,55 +293,77 @@ function NavLink({
   icone,
   ativo,
   compact,
+  bloqueado,
 }: {
   href: string;
   label: string;
   icone?: React.ReactNode;
   ativo: boolean;
   compact?: boolean;
+  bloqueado?: boolean;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const destino = bloqueado ? "/ativar-acesso" : href;
 
   return (
     <Link
-      href={href}
+      href={destino}
       aria-busy={pending || undefined}
+      aria-disabled={bloqueado || undefined}
+      title={bloqueado ? "Ative sua compra para acessar os materiais" : undefined}
       onClick={(e) => {
         if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) {
           return;
         }
         e.preventDefault();
         startTransition(() => {
-          router.push(href);
+          router.push(destino);
         });
       }}
       className={
         compact
           ? `inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 transition-colors duration-200 ${
-              ativo
-                ? "bg-zinc-800/80 text-zinc-50"
-                : "text-zinc-400 hover:text-zinc-200"
+              bloqueado
+                ? "cursor-pointer text-zinc-600 opacity-50"
+                : ativo
+                  ? "bg-zinc-800/80 text-zinc-50"
+                  : "text-zinc-400 hover:text-zinc-200"
             } ${pending ? "opacity-80" : ""}`
           : `flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm transition-colors duration-200 ${
-              ativo
-                ? "bg-zinc-800/80 font-medium text-zinc-50"
-                : "text-zinc-400 hover:bg-zinc-800/40 hover:text-zinc-200"
+              bloqueado
+                ? "cursor-pointer text-zinc-600 opacity-50 hover:bg-zinc-800/20 hover:text-zinc-500"
+                : ativo
+                  ? "bg-zinc-800/80 font-medium text-zinc-50"
+                  : "text-zinc-400 hover:bg-zinc-800/40 hover:text-zinc-200"
             } ${pending ? "opacity-80" : ""}`
       }
     >
       {icone ? (
-        <span className={ativo || pending ? "text-primary" : "text-zinc-500"}>
+        <span
+          className={
+            bloqueado
+              ? "text-zinc-600"
+              : ativo || pending
+                ? "text-primary"
+                : "text-zinc-500"
+          }
+        >
           {icone}
         </span>
       ) : null}
-      {label}
+      <span className="min-w-0 flex-1 truncate">{label}</span>
+      {bloqueado ? (
+        <span className="ml-auto text-zinc-600" aria-hidden>
+          <IconeCadeado />
+        </span>
+      ) : null}
       {pending ? <NavSpinner /> : null}
     </Link>
   );
 }
 
-export function Sidebar() {
+export function Sidebar({ materiaisLiberados = false }: { materiaisLiberados?: boolean }) {
   const pathname = usePathname();
 
   const ativo = (href: string) => {
@@ -343,10 +380,23 @@ export function Sidebar() {
           <Brand />
         </div>
         <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-4">
-          {GRUPOS.map((grupo) => (
+          {GRUPOS_BASE.map((grupo) => {
+            const materiaisBloqueado =
+              grupo.titulo === GRUPO_MATERIAIS && !materiaisLiberados;
+
+            return (
             <div key={grupo.titulo}>
-              <p className="px-2 text-xs font-medium tracking-wider text-zinc-500 uppercase">
+              <p
+                className={`px-2 text-xs font-medium tracking-wider uppercase ${
+                  materiaisBloqueado ? "text-zinc-600" : "text-zinc-500"
+                }`}
+              >
                 {grupo.titulo}
+                {materiaisBloqueado ? (
+                  <span className="ml-1.5 inline-flex align-middle text-zinc-600">
+                    <IconeCadeado />
+                  </span>
+                ) : null}
               </p>
               <ul className="mt-2 space-y-1">
                 {grupo.itens.map((item) => (
@@ -355,13 +405,15 @@ export function Sidebar() {
                       href={item.href}
                       label={item.label}
                       icone={"icone" in item ? item.icone : undefined}
-                      ativo={ativo(item.href)}
+                      ativo={!materiaisBloqueado && ativo(item.href)}
+                      bloqueado={materiaisBloqueado}
                     />
                   </li>
                 ))}
               </ul>
             </div>
-          ))}
+            );
+          })}
         </nav>
         <div className="space-y-2 border-t border-border px-4 py-3">
           <LogoutButton />
@@ -382,16 +434,21 @@ export function Sidebar() {
         <Brand />
         <div className="flex items-center gap-1 text-sm">
           <nav className="flex items-center gap-1 overflow-x-auto">
-            {GRUPOS.flatMap((g) => g.itens).map((item) => (
+            {GRUPOS_BASE.flatMap((g) => g.itens).map((item) => {
+              const materiaisBloqueado =
+                item.href.startsWith("/entregaveis") && !materiaisLiberados;
+              return (
               <NavLink
                 key={item.href}
                 href={item.href}
                 label={item.label}
                 icone={"icone" in item ? item.icone : undefined}
-                ativo={ativo(item.href)}
+                ativo={!materiaisBloqueado && ativo(item.href)}
+                bloqueado={materiaisBloqueado}
                 compact
               />
-            ))}
+              );
+            })}
           </nav>
           <LogoutButton className="btn-ghost shrink-0" />
         </div>
