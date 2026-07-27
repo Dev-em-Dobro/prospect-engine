@@ -1,5 +1,5 @@
 export { CompraNaoEncontradaError, CompraRequiredError } from "./erros";
-export { productIdHubla } from "./env";
+export { productIdHubla, urlCheckoutBuildersClub } from "./env";
 export {
   requireCompraAtiva,
   statusCompra,

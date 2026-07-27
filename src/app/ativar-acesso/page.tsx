@@ -2,7 +2,7 @@
 
 import { NOME_PRODUTO_PARTES } from "@/lib/produto";
 import { requireUser } from "@/lib/auth/require-user";
-import { statusCompra, tentarAutoVerificar } from "@/lib/compra";
+import { statusCompra, tentarAutoVerificar, urlCheckoutBuildersClub } from "@/lib/compra";
 import { redirect } from "next/navigation";
 import { AtivarAcessoForm } from "./ativar-form";
 
@@ -16,6 +16,8 @@ export default async function AtivarAcessoPage() {
   if (status.verificada) {
     redirect("/");
   }
+
+  const checkoutUrl = urlCheckoutBuildersClub();
 
   return (
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-10">
@@ -42,6 +44,7 @@ export default async function AtivarAcessoPage() {
           <AtivarAcessoForm
             emailLogin={user.email}
             emailCompra={status.purchaseEmail}
+            checkoutUrl={checkoutUrl}
           />
 
           <div className="mt-6 space-y-2 border-t border-zinc-800 pt-4 text-xs text-zinc-500">
