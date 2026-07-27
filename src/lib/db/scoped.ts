@@ -78,3 +78,15 @@ export async function requireOutreachOwned(outreachId: string) {
   }
   return { ...ctx, outreach };
 }
+
+/** Busca Oportunidade pelo id dentro do tenant (F021). */
+export async function requireOportunidadeOwned(oportunidadeId: string) {
+  const ctx = await requireTenant();
+  const oportunidade = await prisma.oportunidade.findFirst({
+    where: { id: oportunidadeId, user_id: ctx.userId },
+  });
+  if (!oportunidade) {
+    throw new TenantNotFoundError("Oportunidade");
+  }
+  return { ...ctx, oportunidade };
+}

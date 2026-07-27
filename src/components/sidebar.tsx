@@ -168,6 +168,21 @@ const GRUPOS_BASE = [
           />
         ),
       },
+      {
+        href: "/pipeline",
+        label: "Pipeline",
+        icone: (
+          <Icone
+            d={
+              <>
+                <rect x="3" y="4" width="5" height="16" rx="1" />
+                <rect x="10" y="4" width="5" height="10" rx="1" />
+                <rect x="17" y="4" width="5" height="13" rx="1" />
+              </>
+            }
+          />
+        ),
+      },
     ],
   },
   {
