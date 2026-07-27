@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { authClient } from "@/lib/auth/client";
-import { ENTREGAVEIS_MENU } from "@/lib/entregaveis";
+import { ENTREGAVEIS_MENU } from "@/lib/entregaveis/catalogo";
 import { NOME_PRODUTO_PARTES } from "@/lib/produto";
 
 function Icone({ d }: { d: React.ReactNode }) {
@@ -23,6 +23,99 @@ function Icone({ d }: { d: React.ReactNode }) {
     </svg>
   );
 }
+
+const ICONES_ENTREGAVEIS: Record<string, React.ReactNode> = {
+  "arsenal-sites": (
+    <Icone
+      d={
+        <>
+          <rect x="3" y="3" width="7" height="7" rx="1" />
+          <rect x="14" y="3" width="7" height="7" rx="1" />
+          <rect x="3" y="14" width="7" height="7" rx="1" />
+          <rect x="14" y="14" width="7" height="7" rx="1" />
+        </>
+      }
+    />
+  ),
+  prompts: (
+    <Icone
+      d={
+        <>
+          <path d="m12 3-1.9 5.8H4l4.9 3.6-1.9 5.8L12 14.6l4.9 3.8-1.9-5.8L20 8.8h-6.1L12 3z" />
+        </>
+      }
+    />
+  ),
+  portfolio: (
+    <Icone
+      d={
+        <>
+          <rect x="2" y="7" width="20" height="14" rx="2" />
+          <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
+        </>
+      }
+    />
+  ),
+  contrato: (
+    <Icone
+      d={
+        <>
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          <path d="M14 2v6h6" />
+          <path d="M8 13h8" />
+          <path d="M8 17h6" />
+        </>
+      }
+    />
+  ),
+  "scripts-venda": (
+    <Icone
+      d={
+        <>
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          <path d="M8 9h8" />
+          <path d="M8 13h5" />
+        </>
+      }
+    />
+  ),
+  "setup-orion": (
+    <Icone
+      d={
+        <>
+          <circle cx="8" cy="15" r="4" />
+          <path d="m10.5 10.5 6 6" />
+          <path d="m18 6-3-3" />
+          <path d="m15 9 3-3" />
+        </>
+      }
+    />
+  ),
+  briefing: (
+    <Icone
+      d={
+        <>
+          <rect x="8" y="2" width="8" height="4" rx="1" />
+          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+          <path d="M12 11h4" />
+          <path d="M12 16h4" />
+          <path d="M8 11h.01" />
+          <path d="M8 16h.01" />
+        </>
+      }
+    />
+  ),
+  precificacao: (
+    <Icone
+      d={
+        <>
+          <line x1="12" y1="1" x2="12" y2="23" />
+          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+        </>
+      }
+    />
+  ),
+};
 
 const GRUPOS = [
   {
@@ -99,6 +192,7 @@ const GRUPOS = [
       ...ENTREGAVEIS_MENU.map((item) => ({
         href: `/entregaveis/${item.slug}`,
         label: item.titulo,
+        icone: ICONES_ENTREGAVEIS[item.slug],
       })),
     ],
   },
@@ -293,6 +387,7 @@ export function Sidebar() {
                 key={item.href}
                 href={item.href}
                 label={item.label}
+                icone={"icone" in item ? item.icone : undefined}
                 ativo={ativo(item.href)}
                 compact
               />

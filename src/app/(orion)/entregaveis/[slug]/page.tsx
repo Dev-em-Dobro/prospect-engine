@@ -1,8 +1,9 @@
-// F020 — detalhe de um entregável + link externo.
+// F020 — entregável embutido no Orion (sem link externo).
 
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { entregavelPorSlug } from "@/lib/entregaveis";
+import { entregavelPorSlug } from "@/lib/entregaveis/catalogo";
+import { urlInternaEntregavel } from "@/lib/entregaveis/servir";
 
 export const dynamic = "force-dynamic";
 
@@ -12,35 +13,32 @@ export default async function EntregavelPage({ params }: Props) {
   const { slug } = await params;
   const item = entregavelPorSlug(slug);
 
-  if (!item || item.emBreve) {
+  if (!item || item.emBreve || !item.pasta) {
     notFound();
   }
 
+  const src = urlInternaEntregavel(item.pasta);
+
   return (
-    <main className="mx-auto max-w-2xl px-6 py-10">
-      <Link
-        href="/entregaveis"
-        className="text-sm text-zinc-500 transition-colors hover:text-zinc-300"
-      >
-        ← Materiais
-      </Link>
-
-      <h1 className="mt-4 text-2xl font-bold tracking-tight">{item.titulo}</h1>
-      <p className="mt-2 text-sm text-muted">{item.descricao}</p>
-
-      <div className="mt-8 flex flex-wrap gap-3">
-        <a
-          href={item.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="btn-primary"
+    <div className="flex min-h-[calc(100dvh-0px)] flex-col">
+      <header className="flex shrink-0 items-center gap-3 border-b border-border bg-background/95 px-4 py-3 backdrop-blur">
+        <Link
+          href="/entregaveis"
+          className="text-sm text-zinc-500 transition-colors hover:text-zinc-300"
         >
-          Abrir material
-        </a>
-        <Link href="/entregaveis" className="btn-ghost">
-          Ver todos
+          ← Materiais
         </Link>
-      </div>
-    </main>
+        <h1 className="truncate text-sm font-semibold text-zinc-100">
+          {item.titulo}
+        </h1>
+      </header>
+
+      <iframe
+        src={src}
+        title={item.titulo}
+        className="min-h-0 w-full flex-1 border-0 bg-[#0b0d10]"
+        sandbox="allow-scripts allow-same-origin allow-downloads allow-popups"
+      />
+    </div>
   );
 }

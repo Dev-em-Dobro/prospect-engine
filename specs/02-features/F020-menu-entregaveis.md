@@ -27,5 +27,5 @@ Orion principal permanece aberto sem compra.
 ## Critérios de aceitação
 - [ ] **AC1** — Sidebar exibe grupo "Materiais" com visão geral + itens disponíveis.
 - [ ] **AC2** — Usuário sem compra verificada é redirecionado a `/ativar-acesso`.
-- [ ] **AC3** — Página de detalhe abre URL externa do material.
+- [ ] **AC3** — Conteúdo servido internamente via `/api/entregaveis/*` (sem URL pública do hub externo).
 - [ ] **AC4** — Itens "em breve" não aparecem no menu lateral.
