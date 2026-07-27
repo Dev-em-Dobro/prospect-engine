@@ -58,3 +58,19 @@ export async function lerArquivoEntregavel(
 export function urlInternaEntregavel(pasta: string): string {
   return `/api/entregaveis/${pasta}/index.html`;
 }
+
+/** Remove URLs externas remanescentes ao servir texto (HTML/JS/MD). */
+export function sanitizarTextoEntregavel(texto: string): string {
+  return texto
+    .replace(/https:\/\/orion-lead-hunter\.devemdobro\.com\/login/g, "/")
+    .replace(/https:\/\/entregaveis-psi\.vercel\.app[^"'\\s]*/g, "/entregaveis");
+}
+
+export function sanitizarCorpoEntregavel(
+  body: Buffer,
+  contentType: string,
+): Buffer {
+  if (!contentType.startsWith("text/")) return body;
+  const texto = sanitizarTextoEntregavel(body.toString("utf8"));
+  return Buffer.from(texto, "utf8");
+}

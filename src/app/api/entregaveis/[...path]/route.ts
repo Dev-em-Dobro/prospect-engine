@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { requireCompraAtiva } from "@/lib/compra/servico";
-import { lerArquivoEntregavel } from "@/lib/entregaveis/servir";
+import { lerArquivoEntregavel, sanitizarCorpoEntregavel } from "@/lib/entregaveis/servir";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -34,7 +34,9 @@ export async function GET(_request: NextRequest, { params }: Params) {
     return NextResponse.json({ erro: "Não encontrado" }, { status: 404 });
   }
 
-  return new NextResponse(new Uint8Array(arquivo.body), {
+  const corpo = sanitizarCorpoEntregavel(arquivo.body, arquivo.contentType);
+
+  return new NextResponse(new Uint8Array(corpo), {
     status: 200,
     headers: {
       "Content-Type": arquivo.contentType,

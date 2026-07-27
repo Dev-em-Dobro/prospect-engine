@@ -186,7 +186,7 @@
 
       <header class="top">
         <div class="brand"><span class="dot"></span> DEV EM DOBRO <small>&nbsp;/ Consultoria Freela</small></div>
-        <a class="voltar" href="../index.html">
+        <a class="voltar" href="/entregaveis" target="_top">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
           Voltar aos entregáveis
         </a>
@@ -330,7 +330,7 @@
         })
         .catch(function(err){
           console.error('[contrato]', err);
-          prose.innerHTML = '<p class="erro">Não consegui carregar o contrato aqui. Se você abriu o arquivo direto (file://), abra pela página publicada ou por um servidor local (Live Server). Você também pode abrir o arquivo <a href="' + ARQ + '" target="_blank" rel="noopener">' + ARQ + '</a> ou baixar o .zip.</p>';
+          prose.innerHTML = '<p class="erro">Não consegui carregar o contrato. Atualize a página ou baixe o .zip.</p>';
         });
 
       /* ---------- acoes ---------- */

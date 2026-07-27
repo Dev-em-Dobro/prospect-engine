@@ -53,7 +53,7 @@ Você pode restringir a chave pra ela não ser usada por terceiros. Se fizer iss
 ### 7. Cole no Orion e teste
 Abra o Orion, vá na configuração da chave, cole a chave e clique em **testar**. Deu certo? Já pode buscar seus primeiros leads.
 
-Orion: **https://orion-lead-hunter.devemdobro.com/login** (acesso liberado no Kickoff, login por convite).
+Orion: **/** (acesso liberado no Kickoff, login por convite).
 
 ---
 

@@ -13,8 +13,7 @@
     </button>
 
   Requer que _lib/jszip.min.js seja carregado ANTES deste arquivo.
-  Observacao: precisa ser servido por http(s) (Live Server, GitHub Pages, Hubla).
-  Aberto direto por file:// o fetch e bloqueado pelo navegador.
+  Observacao: o download funciona dentro do Orion com sessao ativa.
 */
 (function () {
   'use strict';
@@ -97,8 +96,7 @@
         if (txtEl) txtEl.textContent = 'Tentar de novo';
         alert(
           'Não consegui montar o .zip aqui.\n\n' +
-          'Se você abriu este arquivo direto (file://), abra pela página publicada ou por um ' +
-          'servidor local (ex.: Live Server) que o download funciona.'
+          'Atualize a página no Orion e tente de novo.'
         );
       })
       .then(function () {
