@@ -3,6 +3,7 @@
 
 import { BannerChaves } from "@/components/banner-chaves";
 import { EmptyState } from "@/components/empty-state";
+import { UsoDiarioBanner } from "@/components/uso-diario";
 import { chavesEssenciaisFaltando } from "@/lib/chaves";
 import { prisma } from "@/lib/db";
 import { requireTenant } from "@/lib/db/scoped";
@@ -56,6 +57,10 @@ export default async function TreinoPage() {
           Treine a conversa contra um dono de negócio cético e receba um
           Scorecard no fim. Nada aqui é salvo (F013).
         </p>
+
+        <div className="mt-4">
+          <UsoDiarioBanner operacoes={["simulador_msg"]} />
+        </div>
 
         <div className="mt-6">
           {precisaIa ? (

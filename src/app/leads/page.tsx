@@ -8,6 +8,7 @@ import { ESTAGIOS_EM_ABERTO } from "@/lib/funil";
 import { demoUrlFor } from "@/lib/demos";
 import { BannerChaves } from "@/components/banner-chaves";
 import { EmptyState } from "@/components/empty-state";
+import { UsoDiarioBanner } from "@/components/uso-diario";
 import { AjudaScore } from "./ajuda-score";
 import { ColetarForm } from "./coletar-form";
 import { GerarOutreachButton } from "./gerar-outreach-button";
@@ -140,6 +141,12 @@ export default async function LeadsPage({
           Outreach de WhatsApp (F005) e follow-up (F006). Clique no nome para
           ver detalhes, mensagem e ações.
         </p>
+
+        <div className="mt-4">
+          <UsoDiarioBanner
+            operacoes={["coleta", "proposta", "outreach"]}
+          />
+        </div>
 
         <div className="mt-6">
           {semGoogle ? (
