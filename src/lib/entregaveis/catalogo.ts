@@ -18,7 +18,7 @@ export type Entregavel = {
   pasta: string;
   /** false = aparece no menu lateral */
   emBreve?: boolean;
-  /** Se definido, visão geral exibe "Baixar .zip". */
+  /** Se definido, visão geral e breadcrumb da página exibem "Baixar .zip". */
   kitZip?: KitZip;
 };
 

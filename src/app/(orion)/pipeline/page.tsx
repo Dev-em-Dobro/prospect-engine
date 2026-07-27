@@ -44,8 +44,8 @@ export default async function PipelinePage({
   const perdidas = rows.filter((r) => r.status === "lost");
 
   return (
-    <main className="px-4 py-8 md:px-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
+    <main className="flex h-[100dvh] flex-col overflow-hidden px-4 pt-6 pb-4 md:px-6">
+      <div className="flex shrink-0 flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Pipeline</h1>
           <p className="mt-1 text-sm text-muted">
@@ -55,26 +55,26 @@ export default async function PipelinePage({
         <AdicionarClienteForm />
       </div>
 
-      <section className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="card">
+      <section className="mt-5 grid shrink-0 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="card py-3">
           <p className="text-xs text-zinc-500 uppercase">Em aberto</p>
           <p className="mt-1 text-2xl font-semibold text-zinc-100">
             {ativas.filter((a) => a.status === "open").length}
           </p>
         </div>
-        <div className="card">
+        <div className="card py-3">
           <p className="text-xs text-zinc-500 uppercase">Ganhos</p>
           <p className="mt-1 text-2xl font-semibold text-emerald-400">
             {metricas.ganhos}
           </p>
         </div>
-        <div className="card">
+        <div className="card py-3">
           <p className="text-xs text-zinc-500 uppercase">Faturamento fechado</p>
           <p className="mt-1 text-2xl font-semibold text-primary">
             {formatarReais(metricas.faturamentoFechado)}
           </p>
         </div>
-        <div className="card">
+        <div className="card py-3">
           <p className="text-xs text-zinc-500 uppercase">Perdidos</p>
           <p className="mt-1 text-2xl font-semibold text-zinc-400">
             {metricas.perdidos}
@@ -89,7 +89,7 @@ export default async function PipelinePage({
       </section>
 
       {verPerdidos ? (
-        <section className="mt-8 space-y-3">
+        <section className="mt-6 min-h-0 flex-1 space-y-3 overflow-y-auto">
           <h2 className="text-sm font-semibold text-zinc-400">Perdidos</h2>
           {perdidas.length === 0 ? (
             <p className="text-sm text-muted">Nenhuma oportunidade perdida.</p>
@@ -114,15 +114,15 @@ export default async function PipelinePage({
           )}
         </section>
       ) : (
-        <section className="mt-8 flex gap-3 overflow-x-auto pb-4">
+        <section className="mt-6 flex min-h-0 flex-1 gap-3 overflow-x-auto">
           {ESTAGIOS_BOARD.map((estagio) => {
             const cards = ativas.filter((o) => o.estagio === estagio);
             return (
               <div
                 key={estagio}
-                className="flex w-64 shrink-0 flex-col rounded-xl border border-border bg-card/40"
+                className="flex h-full w-64 shrink-0 flex-col rounded-xl border border-border bg-card/40"
               >
-                <div className="flex items-center justify-between border-b border-border px-3 py-2.5">
+                <div className="flex shrink-0 items-center justify-between border-b border-border px-3 py-2.5">
                   <p className="text-xs font-semibold tracking-wide text-zinc-300 uppercase">
                     {LABEL_ESTAGIO[estagio]}
                   </p>
@@ -130,7 +130,7 @@ export default async function PipelinePage({
                     {cards.length}
                   </span>
                 </div>
-                <ul className="flex flex-1 flex-col gap-2 p-2">
+                <ul className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto p-2">
                   {cards.length === 0 && (
                     <li className="px-2 py-6 text-center text-xs text-zinc-600">
                       Vazio
