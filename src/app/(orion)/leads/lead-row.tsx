@@ -11,6 +11,7 @@ import { GerarOutreachButton } from "./gerar-outreach-button";
 import { ResponderObjecaoPanel } from "./responder-objecao-panel";
 import { GerarPropostaButton } from "./gerar-proposta-button";
 import { DesfechoButtons } from "./desfecho-buttons";
+import { TrabalharLeadButton } from "./trabalhar-lead-button";
 
 export type LeadRowProps = {
   id: string;
@@ -317,6 +318,7 @@ export function LeadRow(p: LeadRowProps) {
                     Ações
                   </p>
                   <div className="mt-2 flex flex-wrap items-start gap-2">
+                    <TrabalharLeadButton leadId={p.id} />
                     <DiagnosticarButton leadId={p.id} />
                     <PriorizarButton leadId={p.id} />
                     <GerarOutreachButton leadId={p.id} />

@@ -86,6 +86,54 @@ Outreaches por Lead (canais diferentes, reescritas, etc.).
 | `enviado`    | bool                            | Marcado manualmente após envio |
 | `enviado_em` | datetime \| null                | Quando `enviado` virou `true` — base da janela de follow-up (F006) |
 
+### Oportunidade
+Card do **Pipeline** ([F021](02-features/F021-pipeline-crm.md)): Lead (ou cliente
+manual) que o aluno decidiu trabalhar até a entrega. Independente de
+`Lead.status`.
+
+| Campo            | Tipo | Notas |
+|------------------|------|-------|
+| `id`             | string (cuid) | PK |
+| `user_id`        | string | FK → User |
+| `lead_id`        | string \| null | FK → Lead (origem Orion); null se manual |
+| `nome_negocio`   | string | |
+| `contato`        | string \| null | |
+| `whatsapp`       | string \| null | |
+| `cidade`         | string \| null | |
+| `nicho`          | string \| null | |
+| `website`        | string \| null | |
+| `origem`         | enum: `orion` \| `manual` \| `indicacao` | |
+| `estagio`        | enum: `novo` \| `abordado` \| `qualificando` \| `proposta` \| `fechado` \| `producao` \| `entregue` \| `recorrencia` | Colunas do board (recorrência fora do MVP visual) |
+| `valor`          | decimal \| null | Valor fechado / negociado |
+| `status`         | enum: `open` \| `won` \| `lost` | |
+| `motivo_perda`   | string \| null | Quando `lost` |
+| `fechado_em`     | datetime \| null | Quando `won` |
+| `created_at` / `updated_at` | datetime | |
+
+### Tarefa da Oportunidade
+Item do playbook semeado na criação.
+
+| Campo | Tipo | Notas |
+|-------|------|-------|
+| `id` | string | PK |
+| `oportunidade_id` | string | FK |
+| `estagio` | mesmo enum da Oportunidade | |
+| `titulo` | string | |
+| `entregavel_slug` | string \| null | Slug F020 (`scripts-venda`, …) |
+| `concluida` | bool | |
+| `concluida_em` | datetime \| null | |
+| `ordem` | int | |
+
+### Nota da Oportunidade
+Histórico livre.
+
+| Campo | Tipo | Notas |
+|-------|------|-------|
+| `id` | string | PK |
+| `oportunidade_id` | string | FK |
+| `corpo` | text | |
+| `created_at` | datetime | |
+
 ---
 
 ## Relacionamentos
@@ -95,6 +143,7 @@ User (auth) 1 ─── N Lead
 User (auth) 1 ─── N Diagnóstico
 User (auth) 1 ─── N Dor
 User (auth) 1 ─── N Outreach
+User (auth) 1 ─── N Oportunidade ([F021](02-features/F021-pipeline-crm.md))
 User (auth) 1 ─── 1 UserApiKeys (BYOK / modo Orion — [F016](02-features/F016-configuracao-de-chaves.md), [F018](02-features/F018-limites-diarios.md))
 User (auth) 1 ─── N DailyUsage (cotas diárias — [F018](02-features/F018-limites-diarios.md))
 User (auth) — `purchase_email`, `purchase_verified_at`, `purchase_product_id` ([F019.1](02-features/F019.1-ativacao-acesso.md))
@@ -102,6 +151,9 @@ HublaEntitlement — e-mails autorizados via webhook ([F019](02-features/F019-we
 Lead 1 ─── N Diagnóstico
 Lead 1 ─── N Dor
 Lead 1 ─── N Outreach
+Lead 0..1 ─── N Oportunidade (origem opcional)
+Oportunidade 1 ─── N Tarefa da Oportunidade
+Oportunidade 1 ─── N Nota da Oportunidade
 ```
 
 Toda entidade de domínio acima é escopada por `user_id` ([F015](02-features/F015-multi-tenant.md)).
@@ -134,6 +186,7 @@ priorização por valor de nicho. São **calculados**, não persistidos (exceto 
 | Use                | NÃO use                                                |
 |--------------------|--------------------------------------------------------|
 | **Lead**           | prospect, contato, empresa, cliente potencial, target  |
+| **Oportunidade**   | deal, card, cliente (como sinônimo genérico no pipeline) |
 | **Diagnóstico**    | análise, auditoria, scan, check                        |
 | **Dor**            | problema, issue, oportunidade, gap, pain point         |
 | **Outreach**       | mensagem, abordagem, copy, contato (no sentido genérico) |
