@@ -8,6 +8,9 @@ import {
 
 const idle: AtivarActionState = { kind: "idle" };
 
+/** Fallback da oferta pública (não-aluno) se HUBLA_CHECKOUT_URL não estiver setada. */
+const CHECKOUT_FALLBACK = "https://pay.hub.la/v1SsMcVXNip7Mn5A2pNH";
+
 export function AtivarAcessoForm({
   emailLogin,
   emailCompra,
@@ -18,6 +21,7 @@ export function AtivarAcessoForm({
   checkoutUrl: string | null;
 }) {
   const [state, action, pending] = useActionState(verificarCompraAction, idle);
+  const ofertaUrl = checkoutUrl || CHECKOUT_FALLBACK;
 
   return (
     <form action={action} className="flex flex-col gap-4">
@@ -59,35 +63,24 @@ export function AtivarAcessoForm({
       </button>
 
       {state.kind === "erro" && (
-        <div className="space-y-3">
-          <p className="alert-erro text-sm">{state.mensagem}</p>
-          {checkoutUrl ? (
-            <div className="rounded-lg border border-zinc-700/60 bg-zinc-900/40 p-4">
-              <p className="text-sm font-medium text-zinc-200">
-                Ainda não comprou o Builders Club?
-              </p>
-              <p className="mt-1 text-xs text-zinc-500">
-                Finalize a compra na Hubla e volte aqui com o mesmo e-mail do
-                checkout para liberar os entregáveis.
-              </p>
-              <a
-                href={checkoutUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-ghost mt-3 inline-flex w-full justify-center border border-primary/40 text-primary hover:bg-primary/10"
-              >
-                Comprar Builders Club
-              </a>
-            </div>
-          ) : null}
+        <div className="alert-erro space-y-3 text-sm">
+          <p>{state.mensagem}</p>
+          <a
+            href={ofertaUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-primary inline-flex w-full justify-center"
+          >
+            Comprar Builders Club
+          </a>
         </div>
       )}
 
-      {state.kind !== "erro" && checkoutUrl ? (
+      {state.kind !== "erro" ? (
         <div className="rounded-lg border border-zinc-800/80 bg-zinc-900/30 p-4 text-center">
           <p className="text-sm text-zinc-400">Ainda não é aluno?</p>
           <a
-            href={checkoutUrl}
+            href={ofertaUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="mt-2 inline-flex text-sm font-medium text-primary hover:underline"
