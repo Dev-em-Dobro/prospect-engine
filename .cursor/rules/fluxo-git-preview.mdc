@@ -1,0 +1,37 @@
+---
+description: Fluxo Git e ambientes (feature → preview → main)
+alwaysApply: true
+---
+
+# Fluxo de desenvolvimento (Orion / prospect-engine)
+
+## Branches
+
+```
+feature/<id-ou-descricao>  →  PR →  feature/preview  →  PR →  main
+```
+
+| Branch | Papel |
+|--------|--------|
+| `feature/*` | Desenvolvimento da alteração |
+| `feature/preview` | Staging / Preview Vercel (QA antes de produção) |
+| `main` | Produção (`orion-lead-hunter.devemdobro.com`) |
+
+## Regras para o agente
+
+- **Não** abrir PR direto de `feature/*` para `main` como caminho padrão.
+- Fluxo padrão: PR `feature/*` → `feature/preview`; após validação, PR `feature/preview` → `main`.
+- Commits e PRs referenciam o ID da feature (`F00X`) quando houver.
+- Preview Vercel usa envs de Preview (Neon staging, `BETTER_AUTH_URL` de staging, secrets próprios).
+- Produção só via merge em `main`.
+
+## Migrations (obrigatório)
+
+- Features em andamento: **somente** `DATABASE_URL_STAGING` (`npm run db:migrate:staging`).
+- **Nunca** rodar `prisma migrate deploy` / `db:migrate` no `DATABASE_URL` de produção sem o usuário pedir explicitamente após validar a feature no Preview.
+- Produção: só depois do merge em `main` **e** confirmação do usuário.
+
+## Domínios (referência)
+
+- Produção: `https://orion-lead-hunter.devemdobro.com`
+- Staging (quando configurado): `https://staging.orion-lead-hunter.devemdobro.com`
