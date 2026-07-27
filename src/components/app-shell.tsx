@@ -9,6 +9,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const semChrome =
     pathname === "/login" ||
+    pathname === "/ativar-acesso" ||
     pathname === "/termos" ||
     pathname === "/privacidade";
 

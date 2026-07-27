@@ -97,6 +97,8 @@ User (auth) 1 ─── N Dor
 User (auth) 1 ─── N Outreach
 User (auth) 1 ─── 1 UserApiKeys (BYOK / modo Orion — [F016](02-features/F016-configuracao-de-chaves.md), [F018](02-features/F018-limites-diarios.md))
 User (auth) 1 ─── N DailyUsage (cotas diárias — [F018](02-features/F018-limites-diarios.md))
+User (auth) — `purchase_email`, `purchase_verified_at`, `purchase_product_id` ([F019.1](02-features/F019.1-ativacao-acesso.md))
+HublaEntitlement — e-mails autorizados via webhook ([F019](02-features/F019-webhook-hubla.md))
 Lead 1 ─── N Diagnóstico
 Lead 1 ─── N Dor
 Lead 1 ─── N Outreach

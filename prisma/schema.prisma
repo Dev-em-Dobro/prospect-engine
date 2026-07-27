@@ -212,6 +212,12 @@ model User {
   image         String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+
+  // F019.1 — cache de compra Hubla verificada (Builders Club).
+  purchaseEmail       String?
+  purchaseVerifiedAt  DateTime?
+  purchaseProductId   String?
+
   sessions      Session[]
   accounts      Account[]
 
@@ -240,6 +246,38 @@ model DailyUsage {
   @@unique([user_id, data, operacao])
   @@index([user_id, data])
   @@map("daily_usage")
+}
+
+// F019 — entitlements Hubla (webhook) + idempotência de entrega.
+enum HublaEntitlementStatus {
+  ativo
+  revogado
+}
+
+model HublaEntitlement {
+  id               String                  @id @default(cuid())
+  email            String
+  product_id       String
+  status           HublaEntitlementStatus  @default(ativo)
+  hubla_user_id    String?
+  subscription_id  String?
+  granted_at       DateTime                @default(now())
+  revoked_at       DateTime?
+  created_at       DateTime                @default(now())
+  updated_at       DateTime                @updatedAt
+
+  @@unique([email, product_id])
+  @@index([email])
+  @@index([status])
+  @@map("hubla_entitlement")
+}
+
+model HublaWebhookDelivery {
+  idempotency_key String   @id
+  event_type      String
+  processed_at    DateTime @default(now())
+
+  @@map("hubla_webhook_delivery")
 }
 
 model Session {
