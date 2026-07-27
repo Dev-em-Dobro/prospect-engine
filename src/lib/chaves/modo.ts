@@ -2,6 +2,9 @@
 
 import type { KeyMode } from "@prisma/client";
 import { prisma } from "@/lib/db";
+import { LABEL_KEY_MODE } from "./modo-labels";
+
+export { LABEL_KEY_MODE };
 
 function asKeyMode(raw: string | null | undefined): KeyMode {
   return raw === "byok" ? "byok" : "orion";
@@ -35,8 +38,3 @@ export async function salvarModoChave(
   });
   return row.key_mode;
 }
-
-export const LABEL_KEY_MODE: Record<KeyMode, string> = {
-  orion: "Orion (chaves incluídas)",
-  byok: "BYOK (suas chaves)",
-};

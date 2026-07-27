@@ -6,7 +6,7 @@ import {
   salvarModoChaveAction,
   type ChaveActionState,
 } from "@/actions/configuracao/chaves";
-import { LABEL_KEY_MODE } from "@/lib/chaves";
+import { LABEL_KEY_MODE } from "@/lib/chaves/modo-labels";
 
 const idle: ChaveActionState = { kind: "idle" };
 
