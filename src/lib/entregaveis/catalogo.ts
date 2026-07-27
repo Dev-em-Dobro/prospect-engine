@@ -1,5 +1,15 @@
 // F020 — catálogo estático de entregáveis (Builders Club / Consultoria Freela).
 
+/** Kit .zip gerado sob demanda (mesmos arquivos do hub entregaveis-psi). */
+export type KitZip = {
+  /** Nome do arquivo baixado (ex.: meu-portfolio.zip). */
+  nomeArquivo: string;
+  /** Pasta raiz dentro do zip. */
+  pastaInterna: string;
+  /** Arquivos relativos à pasta do entregável. */
+  arquivos: string[];
+};
+
 export type Entregavel = {
   slug: string;
   titulo: string;
@@ -8,6 +18,8 @@ export type Entregavel = {
   pasta: string;
   /** false = aparece no menu lateral */
   emBreve?: boolean;
+  /** Se definido, visão geral exibe "Baixar .zip". */
+  kitZip?: KitZip;
 };
 
 export const ENTREGAVEIS: Entregavel[] = [
@@ -31,6 +43,15 @@ export const ENTREGAVEIS: Entregavel[] = [
     descricao:
       "Página pronta para mostrar nas abordagens. Troca nome, cidade e WhatsApp.",
     pasta: "04-PORTFOLIO",
+    kitZip: {
+      nomeArquivo: "meu-portfolio.zip",
+      pastaInterna: "meu-portfolio",
+      arquivos: [
+        "index.html",
+        "_GUIA-personalizar.md",
+        "_GUIA-publicar-github-pages.md",
+      ],
+    },
   },
   {
     slug: "contrato",
@@ -38,6 +59,11 @@ export const ENTREGAVEIS: Entregavel[] = [
     descricao:
       "Contrato para projetos simples: sinal, garantia e escopo fora cobrado à parte.",
     pasta: "05-CONTRATO",
+    kitZip: {
+      nomeArquivo: "contrato-freela-devemdobro.zip",
+      pastaInterna: "contrato-freela",
+      arquivos: ["contrato-desenvolvimento.md", "_GUIA-como-usar.md"],
+    },
   },
   {
     slug: "scripts-venda",
@@ -45,6 +71,11 @@ export const ENTREGAVEIS: Entregavel[] = [
     descricao:
       "Do primeiro oi ao contrato: abertura, follow-up, objeção e fechamento.",
     pasta: "06-SCRIPTS-VENDA",
+    kitZip: {
+      nomeArquivo: "scripts-de-venda-devemdobro.zip",
+      pastaInterna: "scripts-de-venda",
+      arquivos: ["scripts-de-venda.md", "_GUIA-como-usar.md"],
+    },
   },
   {
     slug: "setup-orion",
