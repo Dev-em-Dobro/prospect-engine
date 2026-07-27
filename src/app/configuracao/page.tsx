@@ -3,7 +3,6 @@
 import { chavesEssenciaisFaltando, listarVisaoChaves } from "@/lib/chaves";
 import { obterProviderLlm } from "@/lib/llm";
 import { requireTenant } from "@/lib/db/scoped";
-import { AvisoScreenshotOne } from "./aviso-screenshotone";
 import { ChaveCard } from "./chave-card";
 import { OnboardingChaves } from "./onboarding-chaves";
 import { ProviderLlmForm } from "./provider-llm-form";
@@ -17,10 +16,7 @@ export default async function ConfiguracaoPage() {
     obterProviderLlm(userId),
     chavesEssenciaisFaltando(userId),
   ]);
-
-  const serverless =
-    Boolean(process.env.VERCEL) || process.env.NODE_ENV === "production";
-  const screenshot = chaves.find((c) => c.tipo === "screenshotone");
+  const chavesVisiveis = chaves.filter((c) => c.tipo !== "screenshotone");
 
   return (
     <main className="mx-auto max-w-2xl px-6 py-10">
@@ -36,20 +32,15 @@ export default async function ConfiguracaoPage() {
           faltando={faltando}
           provider={provider}
         />
-        <AvisoScreenshotOne
-          screenshot={screenshot}
-          obrigatorioEmProd={serverless}
-        />
         <ProviderLlmForm atual={provider} />
-        {chaves.map((c) => (
+        {chavesVisiveis.map((c) => (
           <ChaveCard key={c.tipo} inicial={c} />
         ))}
       </div>
 
       <p className="mt-8 text-xs text-zinc-500">
         Essenciais: Google (coleta + diagnóstico) e a chave do provedor de IA
-        ativo. ScreenshotOne é opcional em local; em produção serverless
-        (Vercel), necessária pro Diagnóstico UX — ver{" "}
+        ativo — ver{" "}
         <a href="/termos" className="underline underline-offset-2">
           Termos
         </a>{" "}

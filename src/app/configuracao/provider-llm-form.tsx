@@ -30,8 +30,8 @@ export function ProviderLlmForm({
         Provedor de IA ativo
       </h2>
       <p className="mt-1 text-sm text-muted">
-        Outreach, conteúdo, proposta, objeções, treino e Diagnóstico UX usam
-        este provedor (com a chave correspondente abaixo).
+        Outreach, conteúdo, proposta, objeções e treino usam este provedor
+        (com a chave correspondente abaixo).
       </p>
 
       <form action={action} className="mt-4 flex flex-col gap-3">

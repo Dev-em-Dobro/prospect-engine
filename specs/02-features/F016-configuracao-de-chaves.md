@@ -18,6 +18,8 @@ Depende de sessão ([F014](F014-autenticacao.md)) e escopo ([F015](F015-multi-te
   [F017](F017-multi-provider-llm.md). A config aceita as 3 desde já.
 - **ScreenshotOne** (opcional) — necessária pro Diagnóstico UX ([F008](F008-diagnostico-ux-ia.md))
   em produção serverless ([ADR-006](../04-decisions/ADR-006-screenshot-api-externa.md)).
+  **Pausa temporária (2026-07-27):** o slot fica oculto na UI de `/configuracao`
+  enquanto o fluxo de Diagnóstico UX está fora do uso.
 
 ## Modelo (schema)
 `UserApiKeys` — por usuário, **cifrado** (ADR-009): para cada chave, `ciphertext`,
@@ -28,6 +30,7 @@ faltando). `user_id` FK (F015). Migração dedicada.
 - Um input por chave, com **máscara** (mostra só os últimos dígitos) e botão
   **"testar chave"** (ping barato por provedor — ex.: Places textSearch mínimo,
   Anthropic mensagem curta).
+- Durante a pausa da F008, o input de ScreenshotOne não é exibido na tela.
 - **Status por chave:** configurada ✓ / inválida ✗ / faltando —.
 - Nunca exibe o valor em claro nem o devolve ao client.
 
