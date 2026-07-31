@@ -21,12 +21,14 @@ export function GerarOutreachButton({
   const label = tipo === "followup" ? "Gerar follow-up" : "Gerar Outreach";
 
   return (
-    <form action={action}>
-      <input type="hidden" name="lead_id" value={leadId} />
-      <input type="hidden" name="tipo" value={tipo} />
-      <button type="submit" disabled={pending} className="btn-ghost">
-        {pending ? "Gerando..." : label}
-      </button>
+    <div>
+      <form action={action}>
+        <input type="hidden" name="lead_id" value={leadId} />
+        <input type="hidden" name="tipo" value={tipo} />
+        <button type="submit" disabled={pending} className="btn-ghost">
+          {pending ? "Gerando..." : label}
+        </button>
+      </form>
 
       {state.kind === "ok" && (
         <div className="mt-1 max-w-72">
@@ -53,6 +55,6 @@ export function GerarOutreachButton({
       {state.kind === "erro" && (
         <p className="mt-1 max-w-72 text-xs text-red-400">{state.mensagem}</p>
       )}
-    </form>
+    </div>
   );
 }
