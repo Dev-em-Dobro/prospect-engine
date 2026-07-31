@@ -39,20 +39,23 @@ export default async function EntregavelPage({ params }: Props) {
   const src = urlInternaEntregavel(item.pasta);
 
   return (
-    <div className="flex min-h-[100dvh] flex-col">
-      <header className="flex shrink-0 items-center gap-3 border-b border-border bg-background/95 px-4 py-3 backdrop-blur">
-        <Link
-          href="/entregaveis"
-          className="text-sm text-zinc-500 transition-colors hover:text-zinc-300"
-        >
-          ← Materiais
-        </Link>
-        <span className="text-zinc-600" aria-hidden>
-          /
-        </span>
-        <h1 className="min-w-0 flex-1 truncate text-sm font-semibold text-zinc-100">
-          {item.titulo}
-        </h1>
+    <div className="flex h-[calc(100dvh-3.5rem)] flex-col md:h-[100dvh]">
+      <header className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-2 border-b border-border bg-background/95 px-3 py-2.5 backdrop-blur sm:px-4 sm:py-3">
+        <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
+          <Link
+            href="/entregaveis"
+            className="shrink-0 text-sm text-zinc-500 transition-colors hover:text-zinc-300"
+          >
+            <span className="sm:hidden">←</span>
+            <span className="hidden sm:inline">← Materiais</span>
+          </Link>
+          <span className="hidden text-zinc-600 sm:inline" aria-hidden>
+            /
+          </span>
+          <h1 className="min-w-0 truncate text-sm font-semibold text-zinc-100">
+            {item.titulo}
+          </h1>
+        </div>
         {item.kitZip ? (
           <a
             href={`/api/entregaveis/download/${item.slug}`}
@@ -60,7 +63,8 @@ export default async function EntregavelPage({ params }: Props) {
             download={item.kitZip.nomeArquivo}
           >
             <IconeDownload />
-            Baixar .zip
+            <span className="sm:hidden">Baixar</span>
+            <span className="hidden sm:inline">Baixar .zip</span>
           </a>
         ) : null}
       </header>

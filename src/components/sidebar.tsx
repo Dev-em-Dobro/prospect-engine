@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { authClient } from "@/lib/auth/client";
 import { ENTREGAVEIS_MENU } from "@/lib/entregaveis/catalogo";
 import { NOME_PRODUTO_PARTES } from "@/lib/produto";
@@ -131,8 +131,16 @@ function IconeCadeado() {
 }
 
 const GRUPO_MATERIAIS = "Materiais";
+const ARENA_DOBRO_URL = "https://arena.devemdobro.com";
 
-const GRUPOS_BASE = [
+type NavItem = {
+  href: string;
+  label: string;
+  icone?: React.ReactNode;
+  externo?: boolean;
+};
+
+const GRUPOS_BASE: { titulo: string; itens: NavItem[] }[] = [
   {
     titulo: "Prospecção",
     itens: [
@@ -196,6 +204,28 @@ const GRUPOS_BASE = [
             d={
               <>
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              </>
+            }
+          />
+        ),
+      },
+    ],
+  },
+  {
+    titulo: "Arena",
+    itens: [
+      {
+        href: ARENA_DOBRO_URL,
+        label: "Arena Dobro",
+        externo: true,
+        icone: (
+          <Icone
+            d={
+              <>
+                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5C7 4 9 7 12 7s5-3 7.5-3a2.5 2.5 0 0 1 0 5H18" />
+                <path d="M12 7v13" />
+                <path d="M8 21h8" />
+                <path d="M6 9c0 3 2.5 5 6 5s6-2 6-5" />
               </>
             }
           />
@@ -302,6 +332,30 @@ function NavSpinner() {
   );
 }
 
+function navClassName(
+  compact: boolean | undefined,
+  bloqueado: boolean | undefined,
+  ativo: boolean,
+  pending: boolean,
+) {
+  if (compact) {
+    return `inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 transition-colors duration-200 ${
+      bloqueado
+        ? "cursor-pointer text-zinc-600 opacity-50"
+        : ativo
+          ? "bg-zinc-800/80 text-zinc-50"
+          : "text-zinc-400 hover:text-zinc-200"
+    } ${pending ? "opacity-80" : ""}`;
+  }
+  return `flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm transition-colors duration-200 ${
+    bloqueado
+      ? "cursor-pointer text-zinc-600 opacity-50 hover:bg-zinc-800/20 hover:text-zinc-500"
+      : ativo
+        ? "bg-zinc-800/80 font-medium text-zinc-50"
+        : "text-zinc-400 hover:bg-zinc-800/40 hover:text-zinc-200"
+  } ${pending ? "opacity-80" : ""}`;
+}
+
 function NavLink({
   href,
   label,
@@ -309,6 +363,8 @@ function NavLink({
   ativo,
   compact,
   bloqueado,
+  externo,
+  onNavigate,
 }: {
   href: string;
   label: string;
@@ -316,44 +372,16 @@ function NavLink({
   ativo: boolean;
   compact?: boolean;
   bloqueado?: boolean;
+  externo?: boolean;
+  onNavigate?: () => void;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const destino = bloqueado ? "/ativar-acesso" : href;
+  const className = navClassName(compact, bloqueado, ativo, pending);
 
-  return (
-    <Link
-      href={destino}
-      aria-busy={pending || undefined}
-      aria-disabled={bloqueado || undefined}
-      title={bloqueado ? "Ative sua compra para acessar os materiais" : undefined}
-      onClick={(e) => {
-        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) {
-          return;
-        }
-        e.preventDefault();
-        startTransition(() => {
-          router.push(destino);
-        });
-      }}
-      className={
-        compact
-          ? `inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 transition-colors duration-200 ${
-              bloqueado
-                ? "cursor-pointer text-zinc-600 opacity-50"
-                : ativo
-                  ? "bg-zinc-800/80 text-zinc-50"
-                  : "text-zinc-400 hover:text-zinc-200"
-            } ${pending ? "opacity-80" : ""}`
-          : `flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm transition-colors duration-200 ${
-              bloqueado
-                ? "cursor-pointer text-zinc-600 opacity-50 hover:bg-zinc-800/20 hover:text-zinc-500"
-                : ativo
-                  ? "bg-zinc-800/80 font-medium text-zinc-50"
-                  : "text-zinc-400 hover:bg-zinc-800/40 hover:text-zinc-200"
-            } ${pending ? "opacity-80" : ""}`
-      }
-    >
+  const conteudo = (
+    <>
       {icone ? (
         <span
           className={
@@ -374,18 +402,166 @@ function NavLink({
         </span>
       ) : null}
       {pending ? <NavSpinner /> : null}
+    </>
+  );
+
+  if (externo && !bloqueado) {
+    return (
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={className}
+        onClick={() => onNavigate?.()}
+      >
+        {conteudo}
+      </a>
+    );
+  }
+
+  return (
+    <Link
+      href={destino}
+      aria-busy={pending || undefined}
+      aria-disabled={bloqueado || undefined}
+      title={bloqueado ? "Ative sua compra para acessar os materiais" : undefined}
+      onClick={(e) => {
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) {
+          return;
+        }
+        e.preventDefault();
+        onNavigate?.();
+        startTransition(() => {
+          router.push(destino);
+        });
+      }}
+      className={className}
+    >
+      {conteudo}
     </Link>
+  );
+}
+
+function IconeMenu() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+      className="h-5 w-5"
+    >
+      <path d="M4 6h16" />
+      <path d="M4 12h16" />
+      <path d="M4 18h16" />
+    </svg>
+  );
+}
+
+function IconeFechar() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+      className="h-5 w-5"
+    >
+      <path d="M18 6 6 18" />
+      <path d="m6 6 12 12" />
+    </svg>
+  );
+}
+
+function NavGrupos({
+  materiaisLiberados,
+  ativo,
+  onNavigate,
+}: {
+  materiaisLiberados: boolean;
+  ativo: (href: string) => boolean;
+  onNavigate?: () => void;
+}) {
+  return (
+    <>
+      {GRUPOS_BASE.map((grupo) => {
+        const materiaisBloqueado =
+          grupo.titulo === GRUPO_MATERIAIS && !materiaisLiberados;
+
+        return (
+          <div key={grupo.titulo}>
+            <p
+              className={`px-2 text-xs font-medium tracking-wider uppercase ${
+                materiaisBloqueado ? "text-zinc-600" : "text-zinc-500"
+              }`}
+            >
+              {grupo.titulo}
+              {materiaisBloqueado ? (
+                <span className="ml-1.5 inline-flex align-middle text-zinc-600">
+                  <IconeCadeado />
+                </span>
+              ) : null}
+            </p>
+            <ul className="mt-2 space-y-1">
+              {grupo.itens.map((item) => (
+                <li key={item.href}>
+                  <NavLink
+                    href={item.href}
+                    label={item.label}
+                    icone={item.icone}
+                    ativo={
+                      !item.externo &&
+                      !materiaisBloqueado &&
+                      ativo(item.href)
+                    }
+                    bloqueado={materiaisBloqueado}
+                    externo={item.externo}
+                    onNavigate={onNavigate}
+                  />
+                </li>
+              ))}
+            </ul>
+          </div>
+        );
+      })}
+    </>
   );
 }
 
 export function Sidebar({ materiaisLiberados = false }: { materiaisLiberados?: boolean }) {
   const pathname = usePathname();
+  const [menuAberto, setMenuAberto] = useState(false);
 
   const ativo = (href: string) => {
     if (href === "/") return pathname === "/";
     if (href === "/entregaveis") return pathname === "/entregaveis";
     return pathname.startsWith(href);
   };
+
+  useEffect(() => {
+    setMenuAberto(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!menuAberto) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMenuAberto(false);
+    };
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [menuAberto]);
+
+  const fecharMenu = () => setMenuAberto(false);
 
   return (
     <>
@@ -395,40 +571,10 @@ export function Sidebar({ materiaisLiberados = false }: { materiaisLiberados?: b
           <Brand />
         </div>
         <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-4">
-          {GRUPOS_BASE.map((grupo) => {
-            const materiaisBloqueado =
-              grupo.titulo === GRUPO_MATERIAIS && !materiaisLiberados;
-
-            return (
-            <div key={grupo.titulo}>
-              <p
-                className={`px-2 text-xs font-medium tracking-wider uppercase ${
-                  materiaisBloqueado ? "text-zinc-600" : "text-zinc-500"
-                }`}
-              >
-                {grupo.titulo}
-                {materiaisBloqueado ? (
-                  <span className="ml-1.5 inline-flex align-middle text-zinc-600">
-                    <IconeCadeado />
-                  </span>
-                ) : null}
-              </p>
-              <ul className="mt-2 space-y-1">
-                {grupo.itens.map((item) => (
-                  <li key={item.href}>
-                    <NavLink
-                      href={item.href}
-                      label={item.label}
-                      icone={"icone" in item ? item.icone : undefined}
-                      ativo={!materiaisBloqueado && ativo(item.href)}
-                      bloqueado={materiaisBloqueado}
-                    />
-                  </li>
-                ))}
-              </ul>
-            </div>
-            );
-          })}
+          <NavGrupos
+            materiaisLiberados={materiaisLiberados}
+            ativo={ativo}
+          />
         </nav>
         <div className="space-y-2 border-t border-border px-4 py-3">
           <LogoutButton />
@@ -444,30 +590,70 @@ export function Sidebar({ materiaisLiberados = false }: { materiaisLiberados?: b
         </div>
       </aside>
 
-      {/* Top bar (mobile) */}
-      <header className="sticky top-0 z-40 flex h-14 items-center justify-between gap-2 border-b border-border bg-background/80 px-4 backdrop-blur md:hidden">
+      {/* Top bar (mobile) — brand + menu; links ficam no drawer */}
+      <header className="sticky top-0 z-40 flex h-14 items-center justify-between gap-3 border-b border-border bg-background/95 px-4 backdrop-blur md:hidden">
         <Brand />
-        <div className="flex items-center gap-1 text-sm">
-          <nav className="flex items-center gap-1 overflow-x-auto">
-            {GRUPOS_BASE.flatMap((g) => g.itens).map((item) => {
-              const materiaisBloqueado =
-                item.href.startsWith("/entregaveis") && !materiaisLiberados;
-              return (
-              <NavLink
-                key={item.href}
-                href={item.href}
-                label={item.label}
-                icone={"icone" in item ? item.icone : undefined}
-                ativo={!materiaisBloqueado && ativo(item.href)}
-                bloqueado={materiaisBloqueado}
-                compact
-              />
-              );
-            })}
-          </nav>
-          <LogoutButton className="btn-ghost shrink-0" />
-        </div>
+        <button
+          type="button"
+          aria-label={menuAberto ? "Fechar menu" : "Abrir menu"}
+          aria-expanded={menuAberto}
+          onClick={() => setMenuAberto((v) => !v)}
+          className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-zinc-200 transition-colors hover:bg-zinc-800 hover:text-white"
+        >
+          {menuAberto ? <IconeFechar /> : <IconeMenu />}
+        </button>
       </header>
+
+      {menuAberto ? (
+        <div className="fixed inset-0 z-50 md:hidden" role="dialog" aria-modal="true" aria-label="Menu">
+          <button
+            type="button"
+            aria-label="Fechar menu"
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={fecharMenu}
+          />
+          <div className="absolute inset-y-0 right-0 flex w-[min(20rem,100%)] flex-col border-l border-border bg-card shadow-2xl">
+            <div className="flex h-14 items-center justify-between border-b border-border px-4">
+              <p className="text-sm font-semibold text-zinc-100">Menu</p>
+              <button
+                type="button"
+                aria-label="Fechar menu"
+                onClick={fecharMenu}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-zinc-300 transition-colors hover:bg-zinc-800 hover:text-white"
+              >
+                <IconeFechar />
+              </button>
+            </div>
+            <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-4">
+              <NavGrupos
+                materiaisLiberados={materiaisLiberados}
+                ativo={ativo}
+                onNavigate={fecharMenu}
+              />
+            </nav>
+            <div className="space-y-2 border-t border-border px-4 py-3">
+              <LogoutButton />
+              <p className="flex flex-wrap gap-x-2 gap-y-1 text-xs text-zinc-500">
+                <Link
+                  href="/termos"
+                  className="hover:text-zinc-300"
+                  onClick={fecharMenu}
+                >
+                  Termos
+                </Link>
+                <span aria-hidden>·</span>
+                <Link
+                  href="/privacidade"
+                  className="hover:text-zinc-300"
+                  onClick={fecharMenu}
+                >
+                  Privacidade
+                </Link>
+              </p>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </>
   );
 }
