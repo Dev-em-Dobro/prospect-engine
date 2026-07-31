@@ -59,6 +59,9 @@ yarn-error.log*
 # claude code (config local, per-máquina)
 .claude/settings.local.json
 
+# projeto paralelo (será movido para pasta própria)
+/arena-dobro/
+
 # logs
 logs
 *.log
