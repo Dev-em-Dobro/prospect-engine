@@ -7,7 +7,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { exigirChave } from "@/lib/chaves";
-import { consumirCota, verificarCota } from "@/lib/limites";
+import { estornarCota, reservarCota } from "@/lib/limites";
 import { mensagemEscopo, requireTenant } from "@/lib/db/scoped";
 import { PlacesError, textSearch } from "@/lib/places/textSearch";
 
@@ -44,17 +44,20 @@ export async function coletarLeads(
   }
 
   const query = `${parsed.data.termo} em ${parsed.data.localizacao}`;
+  let reservou = false;
+  let userId: string | null = null;
 
   try {
-    const { userId } = await requireTenant();
-    await verificarCota(userId, "coleta");
+    ({ userId } = await requireTenant());
+    await reservarCota(userId, "coleta");
+    reservou = true;
     const googleKey = await exigirChave(userId, "google");
     const resultados = await textSearch(query, googleKey);
 
     // skipDuplicates: conflito em (user_id, place_id) é ignorado (F015).
     const { count: criados } = await prisma.lead.createMany({
       data: resultados.map((p) => ({
-        user_id: userId,
+        user_id: userId!,
         nome: p.nome,
         endereco: p.endereco,
         telefone: p.telefone,
@@ -68,9 +71,11 @@ export async function coletarLeads(
     });
 
     revalidatePath("/leads");
-    await consumirCota(userId, "coleta");
     return { kind: "ok", criados, ignorados: resultados.length - criados };
   } catch (e) {
+    if (reservou && userId) {
+      await estornarCota(userId, "coleta").catch(() => undefined);
+    }
     const escopo = mensagemEscopo(e);
     if (escopo) return { kind: "erro", mensagem: escopo };
     if (e instanceof PlacesError) {
