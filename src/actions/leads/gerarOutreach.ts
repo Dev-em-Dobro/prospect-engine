@@ -14,7 +14,7 @@ import {
   OutreachError,
 } from "@/lib/outreach/gerarOutreach";
 import { createLlmForUser } from "@/lib/llm";
-import { consumirCota, verificarCota } from "@/lib/limites";
+import { estornarCota, reservarCota } from "@/lib/limites";
 import type { ContextoLead } from "@/lib/outreach/prompt";
 import { linkWhatsapp } from "@/lib/outreach/whatsappLink";
 
@@ -40,9 +40,13 @@ export async function gerarOutreachAction(
     return { kind: "erro", mensagem: "Input inválido" };
   }
 
+  let reservou = false;
+  let userId: string | null = null;
+
   try {
-    const { userId } = await requireTenant();
-    await verificarCota(userId, "outreach");
+    ({ userId } = await requireTenant());
+    await reservarCota(userId, "outreach");
+    reservou = true;
     const llm = await createLlmForUser(userId);
     const lead = await prisma.lead.findFirst({
       where: { id: parsed.data.lead_id, user_id: userId },
@@ -52,11 +56,15 @@ export async function gerarOutreachAction(
       },
     });
     if (!lead) {
+      await estornarCota(userId, "outreach");
+      reservou = false;
       return { kind: "erro", mensagem: "Lead não encontrado" };
     }
 
     const diag = lead.diagnosticos[0];
     if (!diag) {
+      await estornarCota(userId, "outreach");
+      reservou = false;
       return {
         kind: "erro",
         mensagem: "Diagnostique o Lead antes de gerar a Outreach",
@@ -79,6 +87,8 @@ export async function gerarOutreachAction(
     try {
       ({ mensagem } = await gerarOutreachLib(ctx, llm, parsed.data.tipo));
     } catch (e) {
+      await estornarCota(userId, "outreach");
+      reservou = false;
       if (e instanceof OutreachError) {
         return { kind: "erro", mensagem: e.message };
       }
@@ -99,7 +109,6 @@ export async function gerarOutreachAction(
     });
 
     revalidatePath("/leads");
-    await consumirCota(userId, "outreach");
 
     return {
       kind: "ok",
@@ -108,6 +117,9 @@ export async function gerarOutreachAction(
       outreachId: outreach.id,
     };
   } catch (e) {
+    if (reservou && userId) {
+      await estornarCota(userId, "outreach").catch(() => undefined);
+    }
     const escopo = mensagemEscopo(e);
     if (escopo) return { kind: "erro", mensagem: escopo };
     throw e;
