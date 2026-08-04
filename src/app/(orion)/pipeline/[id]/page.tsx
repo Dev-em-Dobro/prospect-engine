@@ -15,9 +15,31 @@ import { TarefaCheckbox } from "../tarefa-checkbox";
 import { NotaForm } from "../nota-form";
 import { GanhoPerdidoForms, ValorForm } from "../status-forms";
 import { GerarPropostaButton } from "@/app/(orion)/leads/gerar-proposta-button";
-import { milhar } from "@/lib/proposta/formatar";
+import {
+  PropostaHistorico,
+  type PropostaHistoricoItem,
+} from "../proposta-historico";
 
 export const dynamic = "force-dynamic";
+
+function asEscopo(raw: unknown): { item: string; descricao: string }[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((e) => {
+      if (!e || typeof e !== "object") return null;
+      const o = e as Record<string, unknown>;
+      if (typeof o.item !== "string" || typeof o.descricao !== "string") {
+        return null;
+      }
+      return { item: o.item, descricao: o.descricao };
+    })
+    .filter((e): e is { item: string; descricao: string } => e !== null);
+}
+
+function asStrings(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.filter((e): e is string => typeof e === "string");
+}
 
 function waMe(whatsapp: string | null): string | null {
   if (!whatsapp) return null;
@@ -39,7 +61,7 @@ export default async function OportunidadeDetalhePage({
     include: {
       tarefas: { orderBy: { ordem: "asc" } },
       notas: { orderBy: { created_at: "desc" } },
-      propostas: { orderBy: { versao: "desc" }, take: 5 },
+      propostas: { orderBy: { versao: "desc" }, take: 20 },
     },
   });
 
@@ -125,39 +147,24 @@ export default async function OportunidadeDetalhePage({
           </p>
         )}
         {opp.propostas.length > 0 && (
-          <ul className="space-y-2">
-            {opp.propostas.map((p) => (
-              <li
-                key={p.id}
-                className="rounded-lg border border-border/60 bg-zinc-900/40 px-3 py-2"
-              >
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-sm text-zinc-200">
-                    v{p.versao} · R$ {milhar(p.faixa_min)} – R${" "}
-                    {milhar(p.faixa_max)}
-                    {p.enviada ? (
-                      <span className="ml-2 text-xs text-emerald-400">
-                        enviada
-                      </span>
-                    ) : (
-                      <span className="ml-2 text-xs text-zinc-500">
-                        rascunho
-                      </span>
-                    )}
-                  </p>
-                  <a
-                    href={`/api/propostas/${p.id}/pdf`}
-                    className="text-xs text-primary hover:underline"
-                  >
-                    Baixar PDF
-                  </a>
-                </div>
-                <p className="mt-1 line-clamp-2 text-xs text-zinc-400">
-                  {p.resumo}
-                </p>
-              </li>
-            ))}
-          </ul>
+          <PropostaHistorico
+            oportunidadeId={opp.id}
+            propostas={opp.propostas.map(
+              (p): PropostaHistoricoItem => ({
+                id: p.id,
+                versao: p.versao,
+                resumo: p.resumo,
+                escopo: asEscopo(p.escopo),
+                entregaveis: asStrings(p.entregaveis),
+                prazo_estimado: p.prazo_estimado,
+                observacoes: p.observacoes,
+                faixa_min: p.faixa_min,
+                faixa_max: p.faixa_max,
+                texto_copiavel: p.texto_copiavel,
+                enviada: p.enviada,
+              }),
+            )}
+          />
         )}
       </section>
 

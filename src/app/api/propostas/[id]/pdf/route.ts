@@ -10,6 +10,27 @@ export const dynamic = "force-dynamic";
 
 type Ctx = { params: Promise<{ id: string }> };
 
+type EscopoJson = { item: string; descricao: string };
+
+function asEscopo(raw: unknown): EscopoJson[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((e) => {
+      if (!e || typeof e !== "object") return null;
+      const o = e as Record<string, unknown>;
+      if (typeof o.item !== "string" || typeof o.descricao !== "string") {
+        return null;
+      }
+      return { item: o.item, descricao: o.descricao };
+    })
+    .filter((e): e is EscopoJson => e !== null);
+}
+
+function asStrings(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.filter((e): e is string => typeof e === "string");
+}
+
 /** Nome de arquivo seguro pra Content-Disposition (ASCII). */
 function nomeArquivoPdf(nomeNegocio: string): string {
   const slug = nomeNegocio
@@ -37,7 +58,13 @@ export async function GET(_request: Request, ctx: Ctx) {
 
     const bytes = await montarPdfProposta({
       nomeNegocio: proposta.lead.nome,
-      texto: proposta.texto_copiavel,
+      resumo: proposta.resumo,
+      escopo: asEscopo(proposta.escopo),
+      entregaveis: asStrings(proposta.entregaveis),
+      prazoEstimado: proposta.prazo_estimado,
+      faixaMin: proposta.faixa_min,
+      faixaMax: proposta.faixa_max,
+      observacoes: proposta.observacoes,
     });
 
     const filename = nomeArquivoPdf(proposta.lead.nome);

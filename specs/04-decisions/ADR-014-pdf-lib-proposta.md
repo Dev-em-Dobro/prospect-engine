@@ -32,5 +32,7 @@ no servidor.
 - `package.json` ganha `pdf-lib`.
 - Lógica de layout em `src/lib/proposta/pdf.ts` (pura o bastante para teste
   unitário do “documento montado”).
-- Fontes: Helvetica built-in do PDF (sem embutir TTF no MVP; acentos via WinAnsi
-  / fallback documentado no código se necessário).
+- Tipografia: **Source Sans 3** (OFL) embutida via TTF em
+  `assets/fonts/proposta/` — cobre PT-BR sem WinAnsi/`?`.
+  Requer **`@pdf-lib/fontkit`** (`PDFDocument.registerFontkit`).
+- Layout: fundo suave + faixa de destaque + seções (não só texto corrido).
