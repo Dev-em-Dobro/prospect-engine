@@ -79,7 +79,6 @@ export function checkBetterAuthUrl(): SecretCheck {
     };
   }
   try {
-    // eslint-disable-next-line no-new
     new URL(raw);
   } catch {
     return {

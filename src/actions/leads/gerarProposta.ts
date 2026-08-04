@@ -55,7 +55,7 @@ export async function gerarPropostaAction(
     await verificarCota(userId, "proposta");
     const llm = await createLlmForUser(userId);
 
-    let oportunidadeId: string | null = parsed.data.oportunidade_id ?? null;
+    const oportunidadeId: string | null = parsed.data.oportunidade_id ?? null;
     if (oportunidadeId) {
       const opp = await prisma.oportunidade.findFirst({
         where: { id: oportunidadeId, user_id: userId },
