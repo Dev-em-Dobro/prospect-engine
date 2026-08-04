@@ -14,6 +14,8 @@ import { MoverEstagioSelect } from "../mover-estagio-select";
 import { TarefaCheckbox } from "../tarefa-checkbox";
 import { NotaForm } from "../nota-form";
 import { GanhoPerdidoForms, ValorForm } from "../status-forms";
+import { GerarPropostaButton } from "@/app/(orion)/leads/gerar-proposta-button";
+import { milhar } from "@/lib/proposta/formatar";
 
 export const dynamic = "force-dynamic";
 
@@ -37,6 +39,7 @@ export default async function OportunidadeDetalhePage({
     include: {
       tarefas: { orderBy: { ordem: "asc" } },
       notas: { orderBy: { created_at: "desc" } },
+      propostas: { orderBy: { versao: "desc" }, take: 5 },
     },
   });
 
@@ -107,6 +110,56 @@ export default async function OportunidadeDetalhePage({
           </p>
         </div>
       </header>
+
+      <section className="mt-8 space-y-3">
+        <h2 className="text-sm font-semibold text-zinc-300">Proposta</h2>
+        {opp.lead_id ? (
+          <GerarPropostaButton
+            leadId={opp.lead_id}
+            oportunidadeId={opp.id}
+          />
+        ) : (
+          <p className="text-sm text-muted">
+            Esta Oportunidade não tem Lead vinculado. Gere a Proposta a partir
+            de um Lead diagnosticado em /leads (ou use “Trabalhar este lead”).
+          </p>
+        )}
+        {opp.propostas.length > 0 && (
+          <ul className="space-y-2">
+            {opp.propostas.map((p) => (
+              <li
+                key={p.id}
+                className="rounded-lg border border-border/60 bg-zinc-900/40 px-3 py-2"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-sm text-zinc-200">
+                    v{p.versao} · R$ {milhar(p.faixa_min)} – R${" "}
+                    {milhar(p.faixa_max)}
+                    {p.enviada ? (
+                      <span className="ml-2 text-xs text-emerald-400">
+                        enviada
+                      </span>
+                    ) : (
+                      <span className="ml-2 text-xs text-zinc-500">
+                        rascunho
+                      </span>
+                    )}
+                  </p>
+                  <a
+                    href={`/api/propostas/${p.id}/pdf`}
+                    className="text-xs text-primary hover:underline"
+                  >
+                    Baixar PDF
+                  </a>
+                </div>
+                <p className="mt-1 line-clamp-2 text-xs text-zinc-400">
+                  {p.resumo}
+                </p>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
       <section className="mt-8 space-y-4">
         <h2 className="text-sm font-semibold text-zinc-300">Playbook</h2>

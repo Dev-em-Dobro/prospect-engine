@@ -166,11 +166,7 @@ duplica** essa lógica.
 - Lib nova? Não — reusa `@anthropic-ai/sdk` ([ADR-005](../04-decisions/ADR-005-anthropic-sdk-outreach.md)). **Sem ADR.**
 
 ## Fora do escopo (F012)
-- **Persistência da Proposta** como entidade (`Proposta`, Lead 1—N) — exigiria
-  migração e delta no [domain model](../01-domain-model.md); especar como
-  **F012.1** quando o fluxo provar valor (aí guarda faixa enviada, versão, e
-  fecha o loop de "qual preço converte"). Na v1, o operador copia e envia.
-- **Export em PDF** — v1 entrega texto plano copiável; PDF é F012.1.
+- **Persistência / PDF / Pipeline** — [F022](F022-proposta-persistida-pdf-pipeline.md).
 - Uso do resultado da **F008 (Diagnóstico UX)** como insumo — hoje a F008 não
   persiste; quando persistir (F008.1), a proposta pode citar os achados de UX.
 - Cálculo de desconto/parcelamento, múltiplos pacotes (bronze/prata/ouro).

@@ -90,3 +90,15 @@ export async function requireOportunidadeOwned(oportunidadeId: string) {
   }
   return { ...ctx, oportunidade };
 }
+
+/** Busca Proposta pelo id dentro do tenant (F022). */
+export async function requirePropostaOwned(propostaId: string) {
+  const ctx = await requireTenant();
+  const proposta = await prisma.proposta.findFirst({
+    where: { id: propostaId, user_id: ctx.userId },
+  });
+  if (!proposta) {
+    throw new TenantNotFoundError("Proposta");
+  }
+  return { ...ctx, proposta };
+}

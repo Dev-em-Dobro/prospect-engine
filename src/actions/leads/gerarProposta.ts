@@ -1,10 +1,7 @@
 "use server";
 
-// F012 — Gerador de Proposta com preço sugerido.
-// Spec: /specs/02-features/F012-gerador-de-proposta.md
-// Gera a prosa (Claude) + a faixa de preço (determinística, precos.ts). NÃO muda
-// status nem persiste: a promoção a `proposta` é o botão "Proposta" existente
-// (registrarDesfecho, F006/F010).
+// F012 + F022 — Gerador de Proposta com persistência.
+// Spec: F012-gerador-de-proposta.md + F022-proposta-persistida-pdf-pipeline.md
 
 import { createLlmForUser } from "@/lib/llm";
 import { consumirCota, verificarCota } from "@/lib/limites";
@@ -13,6 +10,7 @@ import { detectarDores, textosDasDores } from "@/lib/dores";
 import { servicosRecomendados } from "@/lib/proposta/servicos";
 import { precificar, type Precificacao } from "@/lib/proposta/precos";
 import { formatarPropostaTexto } from "@/lib/proposta/formatar";
+import { persistirProposta } from "@/lib/proposta/persistir";
 import {
   gerarProposta as gerarPropostaLib,
   PropostaError,
@@ -23,12 +21,15 @@ import { z } from "zod";
 
 const schema = z.object({
   lead_id: z.string().cuid("lead_id inválido"),
+  oportunidade_id: z.string().cuid().optional().or(z.literal("")),
 });
 
 export type GerarPropostaState =
   | { kind: "idle" }
   | {
       kind: "ok";
+      propostaId: string;
+      versao: number;
       proposta: PropostaTexto;
       precificacao: Precificacao;
       textoCopiavel: string;
@@ -39,7 +40,12 @@ export async function gerarPropostaAction(
   _prev: GerarPropostaState,
   formData: FormData,
 ): Promise<GerarPropostaState> {
-  const parsed = schema.safeParse({ lead_id: formData.get("lead_id") });
+  const rawOpp = formData.get("oportunidade_id");
+  const parsed = schema.safeParse({
+    lead_id: formData.get("lead_id"),
+    oportunidade_id:
+      typeof rawOpp === "string" && rawOpp.length > 0 ? rawOpp : undefined,
+  });
   if (!parsed.success) {
     return { kind: "erro", mensagem: "Input inválido" };
   }
@@ -48,6 +54,24 @@ export async function gerarPropostaAction(
     const { userId } = await requireTenant();
     await verificarCota(userId, "proposta");
     const llm = await createLlmForUser(userId);
+
+    let oportunidadeId: string | null = parsed.data.oportunidade_id ?? null;
+    if (oportunidadeId) {
+      const opp = await prisma.oportunidade.findFirst({
+        where: { id: oportunidadeId, user_id: userId },
+        select: { id: true, lead_id: true },
+      });
+      if (!opp) {
+        return { kind: "erro", mensagem: "Oportunidade não encontrada" };
+      }
+      if (opp.lead_id !== parsed.data.lead_id) {
+        return {
+          kind: "erro",
+          mensagem: "Lead da Oportunidade não confere",
+        };
+      }
+    }
+
     const lead = await prisma.lead.findFirst({
       where: { id: parsed.data.lead_id, user_id: userId },
       include: {
@@ -99,13 +123,25 @@ export async function gerarPropostaAction(
       };
     }
 
+    const textoCopiavel = formatarPropostaTexto(proposta, precificacao);
+    const salva = await persistirProposta({
+      userId,
+      leadId: lead.id,
+      oportunidadeId,
+      proposta,
+      precificacao,
+      textoCopiavel,
+    });
+
     await consumirCota(userId, "proposta");
 
     return {
       kind: "ok",
+      propostaId: salva.id,
+      versao: salva.versao,
       proposta,
       precificacao,
-      textoCopiavel: formatarPropostaTexto(proposta, precificacao),
+      textoCopiavel,
     };
   } catch (e) {
     const escopo = mensagemEscopo(e);
