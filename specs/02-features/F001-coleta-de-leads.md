@@ -80,9 +80,7 @@ Contrato completo da Places API em
 
 ## Critérios de aceitação
 - [ ] **AC1** — Enviar `termo="barbearia"` + `localizacao="Curitiba PR"`
-      cria Leads novos (`status=novo`, `score=0`) a partir de **todas as
-      páginas** do Text Search (até `PLACES_MAX_PAGES` × 20), não só a
-      primeira página de 20.
+      cria até 20 Leads novos no banco com `status=novo` e `score=0`.
 - [ ] **AC2** — Rodar a mesma busca duas vezes não duplica nenhum Lead
       do aluno (`unique(user_id, place_id)` — [F015](F015-multi-tenant.md)).
       A segunda execução reporta todos como `ignorados`. Outro aluno pode
