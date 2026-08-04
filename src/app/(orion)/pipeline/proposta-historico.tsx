@@ -65,12 +65,12 @@ function ExcluirRascunho({ propostaId }: { propostaId: string }) {
     return <p className="text-xs text-emerald-400">{state.mensagem}</p>;
   }
   return (
-    <form action={action}>
+    <form action={action} className="inline-flex items-center">
       <input type="hidden" name="proposta_id" value={propostaId} />
       <button
         type="submit"
         disabled={pending}
-        className="text-xs text-red-400/90 hover:underline disabled:opacity-50"
+        className="cursor-pointer text-xs leading-none text-red-400/90 hover:underline disabled:cursor-not-allowed disabled:opacity-50"
         onClick={(e) => {
           if (!confirm("Excluir este rascunho?")) e.preventDefault();
         }}
@@ -247,13 +247,13 @@ export function PropostaHistorico({
                 <button
                   type="button"
                   onClick={() => setAbertaId(aberta ? null : p.id)}
-                  className="text-xs text-primary hover:underline"
+                  className="cursor-pointer text-xs leading-none text-primary hover:underline"
                 >
                   {aberta ? "Fechar" : "Abrir"}
                 </button>
                 <a
                   href={`/api/propostas/${p.id}/pdf`}
-                  className="text-xs text-primary hover:underline"
+                  className="cursor-pointer text-xs leading-none text-primary hover:underline"
                 >
                   Baixar PDF
                 </a>
