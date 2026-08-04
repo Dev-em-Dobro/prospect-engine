@@ -1,4 +1,6 @@
 // F022 / ADR-014 — monta PDF simples da Proposta (pdf-lib).
+// Helvetica = WinAnsi: acentos Latin-1 ok; traços tipográficos precisam
+// ser normalizados (senão viram "?").
 
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 
@@ -7,6 +9,22 @@ export type DadosPdfProposta = {
   versao: number;
   texto: string;
 };
+
+/**
+ * Mapeia pontuação Unicode comum (PT-BR / tipografia) para equivalentes
+ * WinAnsi que a Helvetica do pdf-lib consegue desenhar.
+ */
+export function paraWinAnsi(texto: string): string {
+  return texto
+    .replace(/[\u2014\u2015]/g, "-") // em dash / horizontal bar
+    .replace(/\u2013/g, "-") // en dash
+    .replace(/[\u2018\u2019\u201A]/g, "'") // aspas simples tipográficas
+    .replace(/[\u201C\u201D\u201E]/g, '"') // aspas duplas tipográficas
+    .replace(/\u2026/g, "...") // ellipsis
+    .replace(/\u00A0/g, " ") // nbsp
+    .replace(/[\u2022\u2023\u25E6]/g, "-") // bullets → hífen
+    .replace(/[^\x09\x0A\x0D\x20-\x7E\xA0-\xFF]/g, "");
+}
 
 /** Quebra texto em linhas respeitando largura aproximada (Helvetica 11). */
 export function quebrarLinhas(texto: string, maxChars = 90): string[] {
@@ -52,9 +70,7 @@ export async function montarPdfProposta(
       page = doc.addPage([pageWidth, pageHeight]);
       y = pageHeight - margin;
     }
-    // pdf-lib WinAnsi: remove chars fora do subset básico
-    const safe = text.replace(/[^\x09\x0A\x0D\x20-\x7E\xA0-\xFF]/g, "?");
-    page.drawText(safe, {
+    page.drawText(paraWinAnsi(text), {
       x: margin,
       y,
       size,
@@ -65,7 +81,7 @@ export async function montarPdfProposta(
     y -= opts?.size ? opts.size + 8 : lineHeight;
   };
 
-  draw(`Proposta v${dados.versao} — ${dados.nomeNegocio}`, {
+  draw(`Proposta v${dados.versao} - ${dados.nomeNegocio}`, {
     bold: true,
     size: titleSize,
   });
