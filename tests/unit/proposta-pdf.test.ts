@@ -23,13 +23,19 @@ describe("F022 pdf", () => {
     expect(paraWinAnsi("captação e presença")).toBe("captação e presença");
   });
 
-  it("monta PDF com bytes %PDF", async () => {
+  it("monta PDF com bytes %PDF e layout estruturado", async () => {
     const bytes = await montarPdfProposta({
       nomeNegocio: "Barbearia Teste",
-      texto: "Proposta — resumo\n\nEscopo:\n- Site: do zero\nR$ 1.050 – R$ 1.950",
+      resumo: "Proposta — resumo com acentos: captação e presença.",
+      escopo: [{ item: "Site", descricao: "do zero" }],
+      entregaveis: ["Landing page"],
+      prazoEstimado: "2 a 3 semanas",
+      faixaMin: 1050,
+      faixaMax: 1950,
+      observacoes: "Próximos passos alinhados.",
     });
     const head = String.fromCharCode(...bytes.slice(0, 4));
     expect(head).toBe("%PDF");
-    expect(bytes.length).toBeGreaterThan(100);
+    expect(bytes.length).toBeGreaterThan(1000);
   });
 });

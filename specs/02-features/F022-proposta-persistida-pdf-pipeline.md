@@ -21,18 +21,23 @@ marca como enviada e ancora o valor no card do Pipeline.
 
 ### 1) Persistência
 Cada geração bem-sucedida **grava** uma Proposta (versão incremental por Lead).
-UI lista as propostas do Lead / da Oportunidade; permite **Copiar**,
-**Baixar PDF** e **Marcar como enviada** (espelha Outreach / F006).
+UI lista as propostas do Lead / da Oportunidade; permite **Abrir** (reabrir
+rascunho), **Copiar**, **Baixar PDF**, **Marcar como enviada** e **Excluir**
+rascunho (enviadas não excluem pelo MVP — só rascunhos).
 
 ### 2) PDF
-Rota autenticada de download `.pdf` com o texto formatado (resumo, escopo,
-entregáveis, prazo, faixa de preço). Lib: [`pdf-lib`](../04-decisions/ADR-014-pdf-lib-proposta.md).
+Rota autenticada de download `.pdf` com layout **cliente-facing**: fundo,
+faixa de destaque, tipografia embutida (Source Sans 3) e seções estruturadas
+(resumo, escopo, entregáveis, prazo, investimento). Sem número de versão no
+documento. Lib: [`pdf-lib`](../04-decisions/ADR-014-pdf-lib-proposta.md).
 
 ### 3) Pipeline
 No detalhe da Oportunidade (`/pipeline/[id]`):
 - Botão **Gerar Proposta** se houver `lead_id` + Diagnóstico (reusa F012).
 - Ao gerar: persiste com `oportunidade_id`; sugere **aplicar `faixa_min` em
   `Oportunidade.valor`** (ação explícita do aluno, não automática surpresa).
+- Histórico: **Abrir** reexibe painel completo (copiar / PDF / marcar enviada);
+  **Excluir** remove rascunho.
 - Opcional: mover estágio para `proposta` via dropdown já existente (F021) —
   a F022 **não** força a transição sozinha (mesmo espírito da F012 +
   `registrarDesfecho`).
@@ -69,9 +74,18 @@ Multi-tenant: `user_id` em toda query ([F015](F015-multi-tenant.md)).
 `PATCH`/action: `enviada=true`, `enviado_em=now()`. Não altera `Lead.status`
 nem `Oportunidade.estagio` (aluno usa botões já existentes).
 
+### Excluir rascunho
+Action: `DELETE` hard da Proposta se `enviada=false` e `user_id` confere.
+Enviada → erro descritivo (MVP).
+
+### Reabrir
+Na UI do histórico, **Abrir** expande o painel com prosa + ações (Copiar, PDF,
+marcar enviada, aplicar valor) a partir dos campos persistidos — sem nova
+chamada LLM / sem consumir cota.
+
 ### PDF
 `GET /api/propostas/[id]/pdf` (sessão obrigatória, escopo `user_id`) →
-`application/pdf` attachment.
+`application/pdf` attachment com layout visual (fonte embutida + fundo).
 
 ### Aplicar valor no Pipeline
 Action: `oportunidade.valor = faixa_min` da Proposta escolhida (confirmação na UI).
@@ -79,11 +93,12 @@ Action: `oportunidade.valor = faixa_min` da Proposta escolhida (confirmação na
 ## Critérios de aceitação
 - [ ] **AC1** — Gerar Proposta no Lead persiste linha; regenerar cria nova
       `versao` sem apagar a anterior.
-- [ ] **AC2** — Painel mostra histórico (ao menos a mais recente) com Copiar,
-      Baixar PDF e Marcar enviada.
-- [ ] **AC3** — PDF baixa com prosa + linha de preço; aluno de outro tenant
-      recebe 404/403.
-- [ ] **AC4** — Em `/pipeline/[id]` com `lead_id` + Diagnóstico: Gerar Proposta
+- [ ] **AC2** — Painel mostra histórico com Abrir, Copiar, Baixar PDF, Marcar
+      enviada; rascunho pode ser **excluído**.
+- [ ] **AC3** — PDF baixa com prosa + linha de preço, tipografia embutida e
+      fundo; aluno de outro tenant recebe 404/403; sem “vN” no documento.
+- [ ] **AC10** — Abrir rascunho reexibe conteúdo persistido sem nova geração LLM.
+- [ ] **AC11** — Excluir rascunho remove a linha; tentativa em enviada falha.- [ ] **AC4** — Em `/pipeline/[id]` com `lead_id` + Diagnóstico: Gerar Proposta
       grava com `oportunidade_id` preenchido.
 - [ ] **AC5** — Sem `lead_id` ou sem Diagnóstico: erro descritivo, sem chamada LLM.
 - [ ] **AC6** — “Aplicar valor sugerido” grava `Oportunidade.valor = faixa_min`.

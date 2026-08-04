@@ -7,6 +7,10 @@ const nextConfig: NextConfig = {
   // Playwright (F008/ADR-006) não pode ser bundlado pelo Next — carrega o
   // Chromium em runtime.
   serverExternalPackages: ["playwright"],
+  // F022 — TTFs da Proposta lidos via fs em runtime (Vercel file tracing).
+  outputFileTracingIncludes: {
+    "/api/propostas/[id]/pdf": ["./assets/fonts/proposta/**/*"],
+  },
 };
 
 const temAuthToken = Boolean(process.env.SENTRY_AUTH_TOKEN?.trim());
