@@ -26,7 +26,6 @@ describe("F022 pdf", () => {
   it("monta PDF com bytes %PDF", async () => {
     const bytes = await montarPdfProposta({
       nomeNegocio: "Barbearia Teste",
-      versao: 1,
       texto: "Proposta — resumo\n\nEscopo:\n- Site: do zero\nR$ 1.050 – R$ 1.950",
     });
     const head = String.fromCharCode(...bytes.slice(0, 4));

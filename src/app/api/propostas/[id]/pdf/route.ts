@@ -10,6 +10,18 @@ export const dynamic = "force-dynamic";
 
 type Ctx = { params: Promise<{ id: string }> };
 
+/** Nome de arquivo seguro pra Content-Disposition (ASCII). */
+function nomeArquivoPdf(nomeNegocio: string): string {
+  const slug = nomeNegocio
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 60);
+  return `proposta${slug ? `-${slug}` : ""}.pdf`;
+}
+
 export async function GET(_request: Request, ctx: Ctx) {
   try {
     const user = await requireUser();
@@ -25,11 +37,10 @@ export async function GET(_request: Request, ctx: Ctx) {
 
     const bytes = await montarPdfProposta({
       nomeNegocio: proposta.lead.nome,
-      versao: proposta.versao,
       texto: proposta.texto_copiavel,
     });
 
-    const filename = `proposta-v${proposta.versao}.pdf`;
+    const filename = nomeArquivoPdf(proposta.lead.nome);
     return new NextResponse(Buffer.from(bytes), {
       status: 200,
       headers: {
