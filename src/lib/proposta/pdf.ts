@@ -6,7 +6,6 @@ import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 
 export type DadosPdfProposta = {
   nomeNegocio: string;
-  versao: number;
   texto: string;
 };
 
@@ -81,13 +80,16 @@ export async function montarPdfProposta(
     y -= opts?.size ? opts.size + 8 : lineHeight;
   };
 
-  draw(`Proposta v${dados.versao} - ${dados.nomeNegocio}`, {
+  // Título cliente-facing (versão fica só na UI do aluno).
+  draw(`Proposta - ${dados.nomeNegocio}`, {
     bold: true,
     size: titleSize,
   });
   y -= 8;
 
-  for (const linha of quebrarLinhas(dados.texto, 88)) {
+  // Texto copiável já começa com "Proposta — …"; no PDF o título cobre isso.
+  const corpo = dados.texto.replace(/^Proposta\s*[—–-]\s*/i, "");
+  for (const linha of quebrarLinhas(corpo, 88)) {
     draw(linha || " ");
   }
 
