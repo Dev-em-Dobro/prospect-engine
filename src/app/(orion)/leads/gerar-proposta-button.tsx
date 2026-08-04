@@ -5,12 +5,77 @@ import {
   gerarPropostaAction,
   type GerarPropostaState,
 } from "@/actions/leads/gerarProposta";
+import {
+  marcarPropostaEnviada,
+  type MarcarPropostaEnviadaState,
+} from "@/actions/leads/marcarPropostaEnviada";
+import {
+  aplicarValorProposta,
+  type AplicarValorPropostaState,
+} from "@/actions/pipeline/aplicar-valor-proposta";
 import { SERVICO_LABEL } from "@/lib/proposta/servicos";
 import { faixaBRL } from "@/lib/proposta/formatar";
 
 const initial: GerarPropostaState = { kind: "idle" };
+const initialMarcar: MarcarPropostaEnviadaState = { kind: "idle" };
+const initialValor: AplicarValorPropostaState = { kind: "idle" };
 
-export function GerarPropostaButton({ leadId }: { leadId: string }) {
+function MarcarEnviada({ propostaId }: { propostaId: string }) {
+  const [state, action, pending] = useActionState(
+    marcarPropostaEnviada,
+    initialMarcar,
+  );
+  if (state.kind === "ok") {
+    return <p className="mt-1 text-xs text-emerald-400">{state.mensagem}</p>;
+  }
+  return (
+    <form action={action} className="mt-1">
+      <input type="hidden" name="proposta_id" value={propostaId} />
+      <button type="submit" disabled={pending} className="btn-ghost">
+        {pending ? "Marcando..." : "Marcar como enviada"}
+      </button>
+      {state.kind === "erro" && (
+        <p className="mt-1 text-xs text-red-400">{state.mensagem}</p>
+      )}
+    </form>
+  );
+}
+
+function AplicarValor({
+  propostaId,
+  oportunidadeId,
+}: {
+  propostaId: string;
+  oportunidadeId: string;
+}) {
+  const [state, action, pending] = useActionState(
+    aplicarValorProposta,
+    initialValor,
+  );
+  if (state.kind === "ok") {
+    return <p className="mt-1 text-xs text-emerald-400">{state.mensagem}</p>;
+  }
+  return (
+    <form action={action} className="mt-1">
+      <input type="hidden" name="proposta_id" value={propostaId} />
+      <input type="hidden" name="oportunidade_id" value={oportunidadeId} />
+      <button type="submit" disabled={pending} className="btn-ghost">
+        {pending ? "Aplicando..." : "Aplicar valor sugerido"}
+      </button>
+      {state.kind === "erro" && (
+        <p className="mt-1 text-xs text-red-400">{state.mensagem}</p>
+      )}
+    </form>
+  );
+}
+
+export function GerarPropostaButton({
+  leadId,
+  oportunidadeId,
+}: {
+  leadId: string;
+  oportunidadeId?: string;
+}) {
   const [state, action, pending] = useActionState(gerarPropostaAction, initial);
   const [copiado, setCopiado] = useState(false);
 
@@ -21,15 +86,23 @@ export function GerarPropostaButton({ leadId }: { leadId: string }) {
   }
 
   return (
-    <form action={action}>
-      <input type="hidden" name="lead_id" value={leadId} />
-      <button type="submit" disabled={pending} className="btn-ghost">
-        {pending ? "Gerando..." : "Gerar Proposta"}
-      </button>
+    <div>
+      <form action={action}>
+        <input type="hidden" name="lead_id" value={leadId} />
+        {oportunidadeId ? (
+          <input type="hidden" name="oportunidade_id" value={oportunidadeId} />
+        ) : null}
+        <button type="submit" disabled={pending} className="btn-ghost">
+          {pending ? "Gerando..." : "Gerar Proposta"}
+        </button>
+      </form>
 
       {state.kind === "ok" && (
         <div className="mt-1 w-72 rounded-lg border border-border bg-zinc-900/70 p-3 text-left whitespace-normal">
-          <p className="text-xs leading-relaxed text-zinc-300">
+          <p className="text-[10px] tracking-wide text-zinc-500 uppercase">
+            Versão {state.versao} · salva
+          </p>
+          <p className="mt-1 text-xs leading-relaxed text-zinc-300">
             {state.proposta.resumo}
           </p>
 
@@ -83,19 +156,34 @@ export function GerarPropostaButton({ leadId }: { leadId: string }) {
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={() => copiar(state.textoCopiavel)}
-            className="btn-ghost mt-2"
-          >
-            {copiado ? "Copiado!" : "Copiar"}
-          </button>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => copiar(state.textoCopiavel)}
+              className="btn-ghost"
+            >
+              {copiado ? "Copiado!" : "Copiar"}
+            </button>
+            <a
+              href={`/api/propostas/${state.propostaId}/pdf`}
+              className="btn-ghost"
+            >
+              Baixar PDF
+            </a>
+          </div>
+          <MarcarEnviada propostaId={state.propostaId} />
+          {oportunidadeId ? (
+            <AplicarValor
+              propostaId={state.propostaId}
+              oportunidadeId={oportunidadeId}
+            />
+          ) : null}
         </div>
       )}
 
       {state.kind === "erro" && (
         <p className="mt-1 max-w-72 text-xs text-red-400">{state.mensagem}</p>
       )}
-    </form>
+    </div>
   );
 }

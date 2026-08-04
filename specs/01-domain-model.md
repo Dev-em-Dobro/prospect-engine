@@ -86,6 +86,30 @@ Outreaches por Lead (canais diferentes, reescritas, etc.).
 | `enviado`    | bool                            | Marcado manualmente após envio |
 | `enviado_em` | datetime \| null                | Quando `enviado` virou `true` — base da janela de follow-up (F006) |
 
+### Proposta
+Artefato comercial gerado ([F012](02-features/F012-gerador-de-proposta.md) +
+[F022](02-features/F022-proposta-persistida-pdf-pipeline.md)). Um Lead pode ter
+várias versões; opcionalmente ligada a uma Oportunidade do Pipeline.
+
+| Campo | Tipo | Notas |
+|-------|------|-------|
+| `id` | string (cuid) | PK |
+| `user_id` | string | FK → User |
+| `lead_id` | string | FK → Lead (obrigatório na geração) |
+| `oportunidade_id` | string \| null | FK → Oportunidade quando gerada no Pipeline |
+| `versao` | int | Incremental por Lead (1, 2, …) |
+| `resumo` | text | |
+| `escopo` | JSON | `[{ item, descricao }]` |
+| `entregaveis` | JSON | `string[]` |
+| `prazo_estimado` | string | |
+| `observacoes` | text | |
+| `faixa_min` / `faixa_max` | int | Preço determinístico (F012) |
+| `servicos` | JSON | `string[]` códigos de Serviço |
+| `texto_copiavel` | text | Snapshot no momento da geração |
+| `enviada` | bool | Default false |
+| `enviada_em` | datetime \| null | |
+| `gerado_em` | datetime | |
+
 ### Oportunidade
 Card do **Pipeline** ([F021](02-features/F021-pipeline-crm.md)): Lead (ou cliente
 manual) que o aluno decidiu trabalhar até a entrega. Independente de
@@ -143,6 +167,7 @@ User (auth) 1 ─── N Lead
 User (auth) 1 ─── N Diagnóstico
 User (auth) 1 ─── N Dor
 User (auth) 1 ─── N Outreach
+User (auth) 1 ─── N Proposta ([F022](02-features/F022-proposta-persistida-pdf-pipeline.md))
 User (auth) 1 ─── N Oportunidade ([F021](02-features/F021-pipeline-crm.md))
 User (auth) 1 ─── 1 UserApiKeys (BYOK / modo Orion — [F016](02-features/F016-configuracao-de-chaves.md), [F018](02-features/F018-limites-diarios.md))
 User (auth) 1 ─── N DailyUsage (cotas diárias — [F018](02-features/F018-limites-diarios.md))
@@ -151,9 +176,11 @@ HublaEntitlement — e-mails autorizados via webhook ([F019](02-features/F019-we
 Lead 1 ─── N Diagnóstico
 Lead 1 ─── N Dor
 Lead 1 ─── N Outreach
+Lead 1 ─── N Proposta
 Lead 0..1 ─── N Oportunidade (origem opcional)
 Oportunidade 1 ─── N Tarefa da Oportunidade
 Oportunidade 1 ─── N Nota da Oportunidade
+Oportunidade 0..1 ─── N Proposta (quando gerada no Pipeline)
 ```
 
 Toda entidade de domínio acima é escopada por `user_id` ([F015](02-features/F015-multi-tenant.md)).
@@ -190,6 +217,7 @@ priorização por valor de nicho. São **calculados**, não persistidos (exceto 
 | **Diagnóstico**    | análise, auditoria, scan, check                        |
 | **Dor**            | problema, issue, oportunidade, gap, pain point         |
 | **Outreach**       | mensagem, abordagem, copy, contato (no sentido genérico) |
+| **Proposta**       | orçamento (como sinônimo do artefato), quote, PDF solto  |
 | **score**          | rating, ranking, nota, prioridade (como sinônimo)      |
 | **place_id**       | google_id, gid, external_id                            |
 | **status `contatado`** | enviado, abordado, prospectado                     |

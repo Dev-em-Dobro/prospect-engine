@@ -62,6 +62,7 @@ model Lead {
   diagnosticos Diagnostico[]
   dores        Dor[]
   outreaches   Outreach[]
+  propostas    Proposta[]
   oportunidades Oportunidade[]
 
   @@unique([user_id, place_id])
@@ -226,6 +227,7 @@ model User {
   diagnosticos   Diagnostico[]
   dores          Dor[]
   outreaches     Outreach[]
+  propostas      Proposta[]
   oportunidades  Oportunidade[]
   apiKeys        UserApiKeys?
   dailyUsages    DailyUsage[]
@@ -380,12 +382,44 @@ model Oportunidade {
   lead   Lead?              @relation(fields: [lead_id], references: [id], onDelete: SetNull)
   tarefas TarefaOportunidade[]
   notas   NotaOportunidade[]
+  propostas Proposta[]
 
   @@index([user_id])
   @@index([user_id, status])
   @@index([user_id, estagio])
   @@index([lead_id])
   @@map("oportunidade")
+}
+
+// F022 — Proposta persistida (geração F012 + PDF/Pipeline).
+model Proposta {
+  id               String   @id @default(cuid())
+  user_id          String
+  lead_id          String
+  oportunidade_id  String?
+  versao           Int
+  resumo           String
+  escopo           Json
+  entregaveis      Json
+  prazo_estimado   String
+  observacoes      String   @default("")
+  faixa_min        Int
+  faixa_max        Int
+  servicos         Json
+  texto_copiavel   String
+  enviada          Boolean  @default(false)
+  enviada_em       DateTime?
+  gerado_em        DateTime @default(now())
+
+  user         User          @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  lead         Lead          @relation(fields: [lead_id], references: [id], onDelete: Cascade)
+  oportunidade Oportunidade? @relation(fields: [oportunidade_id], references: [id], onDelete: SetNull)
+
+  @@index([user_id])
+  @@index([lead_id])
+  @@index([oportunidade_id])
+  @@unique([lead_id, versao])
+  @@map("proposta")
 }
 
 model TarefaOportunidade {
