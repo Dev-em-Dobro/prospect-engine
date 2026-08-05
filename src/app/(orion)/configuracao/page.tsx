@@ -54,10 +54,11 @@ export default async function ConfiguracaoPage() {
               Chaves incluídas
             </h2>
             <p className="mt-2 text-sm text-muted">
-              Google Places (coleta) e OpenAI (IA) são fornecidos pela Orion.
-              Você não precisa criar contas nos provedores. Para usar suas
-              próprias chaves e remover os limites diários, ative o modo BYOK
-              acima.
+              Google Places (coleta) e <strong className="text-zinc-300">OpenAI</strong>{" "}
+              (Outreach, proposta, simulador…) vêm da Orion.{" "}
+              <strong className="text-zinc-300">Gemini não entra no modo Orion</strong>
+              — para usar sua chave Gemini: ative BYOK, escolha Gemini como
+              provedor e salve/teste a chave abaixo.
             </p>
           </section>
         )}
