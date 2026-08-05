@@ -14,12 +14,12 @@ const OPCOES: { id: KeyMode; descricao: string }[] = [
   {
     id: "orion",
     descricao:
-      "Usa as chaves da Orion — sem conta Google/OpenAI. Limites diários de uso.",
+      "Chaves da Orion: Google Places + OpenAI (IA). Sem Gemini. Limites diários de uso.",
   },
   {
     id: "byok",
     descricao:
-      "Suas próprias chaves de API (BYOK). Sem limites diários; custo na sua conta.",
+      "Suas chaves (Google + Anthropic/OpenAI/Gemini). Sem limites diários da Orion; custo na sua conta.",
   },
 ];
 
